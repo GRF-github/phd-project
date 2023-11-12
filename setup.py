@@ -18,7 +18,8 @@ setup(
         "gpytorch>=1.4.2",
         "lightgbm>=3.2.1",
         "scikit_learn>=0.24.2",
-        "matplotlib>=3.3.3"
+        "matplotlib>=3.3.3",
+        "importlib_resources>=6.1.1"
     ],
     package_data={"cmmrt": ["data/**/*.pt", "data/**/*.csv"]}
 )
