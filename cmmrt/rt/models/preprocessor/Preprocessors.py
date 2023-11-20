@@ -99,23 +99,24 @@ class FgpPreprocessor(BaseEstimator, TransformerMixin):
 
     def _init_hidden_models(self):
         self._fgp_vs = VarianceThreshold(threshold=self.p * (1 - self.p))
-        self._clf = create_clf()
+        # self._clf = create_clf()
 
     def fit(self, X, y=None):
         self._init_hidden_models()
         X_fgp = X[:, self.fgp_cols]
         X_fgp_proc = self._fgp_vs.fit_transform(X_fgp)
-        self._clf = train_clf(self._clf, X_fgp_proc, is_non_retained(y), self.n_trials, self.search_cv,
-                              storage=self.storage, study_prefix=self.study_prefix)
+        # self._clf = train_clf(self._clf, X_fgp_proc, is_non_retained(y), self.n_trials, self.search_cv,
+        #                       storage=self.storage, study_prefix=self.study_prefix)
         return self
 
     def transform(self, X, y=None):
         X_fgp = X[:, self.fgp_cols]
-        X_fgp_proc = self._fgp_vs.transform(X_fgp)
-        prob_predictions = self._clf.predict_proba(X_fgp_proc)[:, 1:].astype('float32')
-        return np.concatenate([X_fgp, prob_predictions], axis=1)
+        return X_fgp
+        # X_fgp_proc = self._fgp_vs.transform(X_fgp)
+        # prob_predictions = self._clf.predict_proba(X_fgp_proc)[:, 1:].astype('float32')
+        # return np.concatenate([X_fgp, prob_predictions], axis=1)
 
-    def _predict_clf_proba(self, X, y=None):
-        X_fgp = X[:, self.fgp_cols]
-        X_fgp_proc = self._fgp_vs.transform(X_fgp)
-        return self._clf.predict_proba(X_fgp_proc).astype('float32')
+    # def _predict_clf_proba(self, X, y=None):
+    #    X_fgp = X[:, self.fgp_cols]
+    #    X_fgp_proc = self._fgp_vs.transform(X_fgp)
+    #    return self._clf.predict_proba(X_fgp_proc).astype('float32')
