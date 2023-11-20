@@ -20,6 +20,7 @@ setup(
         "scikit_learn>=0.24.2",
         "matplotlib>=3.3.3",
         "importlib_resources>=6.1.1"
+        "pandas==1.5.3"
     ],
     package_data={"cmmrt": ["data/**/*.pt", "data/**/*.csv"]}
 )
