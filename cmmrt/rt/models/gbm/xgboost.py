@@ -57,17 +57,17 @@ def create_clf_objective(X, y, cv):
         params = {
             "n_estimators": trial.suggest_int('n_estimators', 0, 1000),
             'max_depth': trial.suggest_int('max_depth', 2, 25),
-            'learning_rate': trial.suggest_loguniform('learning_rate', 0.005, 0.5),
+            'learning_rate': trial.suggest_float('learning_rate', 0.005, 0.5, log=True),
             'verbosity': 0,
             # Not using Dart at the moment
             'booster': trial.suggest_categorical('booster', ['gbtree', 'gblinear']),
             'n_jobs': -1,
             'gamma': trial.suggest_int('gamma', 0, 5),
             'min_child_weight': trial.suggest_int('min_child_weight', 0, 5),
-            'subsample': trial.suggest_discrete_uniform('subsample', 0.5, 1, 0.05),
-            'colsample_bytree': trial.suggest_discrete_uniform('colsample_bytree', 0.1, 1, 0.01),
-            'colsample_bynode': trial.suggest_discrete_uniform('colsample_bynode', 0.1, 1, 0.01),
-            'colsample_bylevel': trial.suggest_discrete_uniform('colsample_bylevel', 0.1, 1, 0.01),
+            'subsample': trial.suggest_float('subsample', 0.5, 1, step=0.05),
+            'colsample_bytree': trial.suggest_float('colsample_bytree', 0.1, 1, step=0.01),
+            'colsample_bynode': trial.suggest_float('colsample_bynode', 0.1, 1, step=0.01),
+            'colsample_bylevel': trial.suggest_float('colsample_bylevel', 0.1, 1, step=0.01),
             'reg_alpha': trial.suggest_int('reg_alpha', 0, 5),
             'reg_lambda': trial.suggest_int('reg_lambda', 0, 5),
             'tree_method': trial.suggest_categorical('tree_method', ['exact', 'approx', 'hist'])
