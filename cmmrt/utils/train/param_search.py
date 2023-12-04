@@ -44,19 +44,19 @@ def _suggest_xgboost(trial):
     params = {
         'n_estimators': trial.suggest_int('n_estimators', 200, 1000),
         'max_depth': trial.suggest_int('max_depth', 1, 31),  # max_depth cannont be greater than 31 to use gpu_hist
-        'learning_rate': trial.suggest_uniform('learning_rate', 1e-4, 2e-1),
+        'learning_rate': trial.suggest_float('learning_rate', 1e-4, 2e-1),
         'booster': trial.suggest_categorical('booster', ['gbtree', 'gblinear']),
-        'gamma': trial.suggest_uniform('gamma', 0, 2),
+        'gamma': trial.suggest_float('gamma', 0, 2),
         'min_child_weight': trial.suggest_loguniform('min_child_weight', 0.001, 10),
-        'subsample': trial.suggest_uniform('subsample', 0.4, 1.0),
-        'reg_alpha': trial.suggest_uniform('reg_alpha', 0, 5),
-        'reg_lambda': trial.suggest_uniform('reg_lambda', 0, 5),
-        'colsample_bytree': trial.suggest_uniform('colsample_bytree', 0.4, 1.0),
-        'colsample_bylevel': trial.suggest_uniform('colsample_bylevel', 0.4, 1.0),
-        'colsample_bynode': trial.suggest_uniform('colsample_bynode', 0.4, 1.0),
+        'subsample': trial.suggest_float('subsample', 0.4, 1.0),
+        'reg_alpha': trial.suggest_float('reg_alpha', 0, 5),
+        'reg_lambda': trial.suggest_float('reg_lambda', 0, 5),
+        'colsample_bytree': trial.suggest_float('colsample_bytree', 0.4, 1.0),
+        'colsample_bylevel': trial.suggest_float('colsample_bylevel', 0.4, 1.0),
+        'colsample_bynode': trial.suggest_float('colsample_bynode', 0.4, 1.0),
         'tree_method': trial.suggest_categorical('tree_method', ['exact', 'approx', 'hist']),  # gpu_hist may be added
         'verbosity': 1,
-        'var_p': trial.suggest_uniform('var_p', 0.9, 1.0)
+        'var_p': trial.suggest_float('var_p', 0.9, 1.0)
     }
     params['n_jobs'] = 1 if params['tree_method'] == 'gpu_hist' else -1
     return params
@@ -69,13 +69,13 @@ def _(estimator: SkDKL, trial):
         'kernel': trial.suggest_categorical('kernel', ['linear', 'rbf', 'mixture']),
         'hidden_1': trial.suggest_categorical('hidden_1', [512, 1024, 2048, 4096]),
         'hidden_2': trial.suggest_categorical('hidden_2', [64, 128, 256, 512, 1024]),
-        'dropout': trial.suggest_uniform('dropout', 0, 0.7),
+        'dropout': trial.suggest_float('dropout', 0, 0.7),
         'use_bn_out': trial.suggest_categorical('use_bn_out', [True, False]),
-        'lr': trial.suggest_uniform('lr', 1e-4, 1e-1),
+        'lr': trial.suggest_float('lr', 1e-4, 1e-1),
         'scheduler_patience': scheduler_patience,
         'early_stopping': trial.suggest_int('early_stopping',
                                             scheduler_patience + 2, 5 * scheduler_patience + 2),
-        'var_p': trial.suggest_uniform('var_p', 0.9, 1)
+        'var_p': trial.suggest_float('var_p', 0.9, 1)
     }
     return params
 
@@ -89,8 +89,8 @@ def _(estimator: LGBMRegressor, trial):
         'lambda_l1': trial.suggest_loguniform('lambda_l1', 1e-8, 10.0),
         'lambda_l2': trial.suggest_loguniform('lambda_l2', 1e-8, 10.0),
         'num_leaves': trial.suggest_int('num_leaves', 2, 256),
-        'feature_fraction': trial.suggest_uniform('feature_fraction', 0.4, 1.0),
-        'bagging_fraction': trial.suggest_uniform('bagging_fraction', 0.4, 1.0),
+        'feature_fraction': trial.suggest_float('feature_fraction', 0.4, 1.0),
+        'bagging_fraction': trial.suggest_float('bagging_fraction', 0.4, 1.0),
         'bagging_freq': trial.suggest_int('bagging_freq', 1, 7),
         'min_child_samples': trial.suggest_int('min_child_samples', 5, 100),
     }
@@ -105,14 +105,14 @@ def _(estimator: SkDnn, trial):
     params = {
         'hidden_1': h1,
         'hidden_2': trial.suggest_int('hidden_2', 32, 512),
-        'dropout_1': trial.suggest_uniform('dropout_1', 0.3, 0.7),
-        'dropout_2': trial.suggest_uniform('dropout_2', 0.0, 0.2),
+        'dropout_1': trial.suggest_float('dropout_1', 0.3, 0.7),
+        'dropout_2': trial.suggest_float('dropout_2', 0.0, 0.2),
         'activation': trial.suggest_categorical('activation', ['relu', 'leaky_relu', 'gelu', 'swish']),
-        'lr': trial.suggest_uniform('lr', 1e-4, 1e-3),
+        'lr': trial.suggest_float('lr', 1e-4, 1e-3),
         'T0': T0,
         'annealing_rounds': trial.suggest_int('annealing_rounds', 2, 5),
         'swa_epochs': trial.suggest_int('swa_epochs', 5, T0),
-        'var_p': trial.suggest_uniform('var_p', 0.9, 1.0)
+        'var_p': trial.suggest_float('var_p', 0.9, 1.0)
     }
     return params
 
