@@ -21,7 +21,7 @@ This script permits the user to specify command line options. Use
 $ python validate_model.py --help
 to see the options.
 """
-
+import argparse
 import os
 import tempfile
 
@@ -30,11 +30,39 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import median_absolute_error
 from sklearn.model_selection import StratifiedKFold
 
-from cmmrt.rt.train_model import create_base_parser
-from cmmrt.rt.train_model import load_data_and_configs
-from cmmrt.rt.train_model import tune_and_fit
+
+from cmmrt.rt.train_dnn_model import load_data_and_configs
+from cmmrt.rt.train_dnn_model import tune_and_fit
 from cmmrt.utils.train.model_selection import stratify_y
 
+def create_base_parser(default_storage, default_study, description=""):
+    """Command line parser for both training and validating all models"""
+    parser = argparse.ArgumentParser(description=description)
+
+    def restricted_float(x):
+        try:
+            x = float(x)
+        except ValueError:
+            raise argparse.ArgumentTypeError(f"{x} not a floating-point literal")
+        if x < 0.0 or x > 1.0:
+            raise argparse.ArgumentTypeError(f"{x} not in range [0.0, 1.0]")
+        return x
+
+    parser.add_argument('--storage', type=str, default=default_storage,
+                        help='SQLITE DB for storing the results of param search (e.g.: sqlite:///train.db')
+    parser.add_argument('--study', type=str, default=default_study,
+                        help='Study name to identify param search results withing the DB')
+    parser.add_argument('--train_size', type=restricted_float, default=restricted_float(0.8),
+                        help="Percentage of the training set to train the base classifiers. The remainder is used to "
+                             "train the meta-classifier")
+    parser.add_argument('--param_search_folds', type=int, default=5, help='Number of folds to be used in param search')
+    parser.add_argument('--trials', type=int, default=10, help='Number of trials in param search')
+    parser.add_argument('--smoke_test', action='store_true',
+                        help='Use small model and subsample training data for quick testing. '
+                             'param_search_folds and trials are also overridden')
+    parser.add_argument('--random_state', type=int, default=42,
+                        help='Random state for reproducibility or reusing param search results')
+    return parser
 
 def create_cv_parser(default_storage, default_study, description):
     """Command line parser for validating all models"""
@@ -45,15 +73,10 @@ def create_cv_parser(default_storage, default_study, description):
     return parser
 
 
-def evaluate_all_estimators(blender, X_test, y_test, metrics, fold_number):
-    """Evaluate all estimators in blender on the test set"""
-    iteration_results = []
-    for estimator_name, estimator in blender._fitted_estimators + [('Blender', blender)]:
-        estimator_results = {k: metric(y_test, estimator.predict(X_test)) for k, metric in metrics.items()}
-        estimator_results['estimator'] = estimator_name
-        estimator_results['fold'] = fold_number
-        iteration_results.append(estimator_results)
-    return pd.DataFrame(iteration_results)
+def evaluate_dnn(dnn, X_test, y_test, metrics, fold_number):
+    dnn_results = {k: metric(y_test, dnn.predict(X_test)) for k, metric in metrics.items()}
+    dnn_results['fold'] = fold_number
+    return pd.DataFrame([dnn_results])
 
 
 if __name__ == '__main__':
@@ -62,11 +85,11 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    alvadesc_data, param_search_config, blender_config = load_data_and_configs(args, download_directory="rt_data")
+    alvadesc_data, param_search_config = load_data_and_configs(args, download_directory="rt_data")
 
     cv_folds = 2 if args.smoke_test else args.cv_folds
     cv = StratifiedKFold(n_splits=cv_folds, shuffle=True, random_state=args.random_state + 500)
-    strats = stratify_y(alvadesc_data.y, blender_config.n_strats)
+    strats = stratify_y(alvadesc_data.y)
 
     metrics = {'mae': mean_absolute_error, 'medae': median_absolute_error}
 
@@ -78,14 +101,12 @@ if __name__ == '__main__':
         alvadesc_train = alvadesc_data[train_index]
         alvadesc_test = alvadesc_data[test_index]
 
-        preprocessor, blender = (
-            tune_and_fit(alvadesc_train, param_search_config=param_search_config, blender_config=blender_config,
-                         smoke_test=args.smoke_test)
+        preprocessor, dnn = (
+            tune_and_fit(alvadesc_data, param_search_config=param_search_config)
         )
-
         X_test = preprocessor.transform(alvadesc_test.X)
         results.append(
-            evaluate_all_estimators(blender, X_test, alvadesc_test.y, metrics, fold)
+            evaluate_dnn(dnn, X_test, alvadesc_test.y, metrics, fold)
         )
     results = pd.concat(results, axis=0)
 

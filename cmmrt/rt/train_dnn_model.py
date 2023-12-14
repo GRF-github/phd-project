@@ -74,10 +74,11 @@ def load_data_and_configs(args, download_directory):
     alvadesc_data = AlvadescDataset(download_directory)
     print(args.smoke_test)
     if args.smoke_test:
-        idx = np.random.choice(np.arange(alvadesc_data.X.shape[0]), 5000, replace=False)
+        print(" ******* USING SMOKDE TEST **********")
+        idx = np.random.choice(np.arange(alvadesc_data.X.shape[0]), 2000, replace=False)
         alvadesc_data = alvadesc_data[idx]
         args.param_search_folds = 2
-        args.trials = 2
+        args.trials = 1
 
     param_search_config = ParamSearchConfig(
         storage=args.storage,
