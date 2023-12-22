@@ -10,11 +10,6 @@ import numpy as np
 import pandas as pd
 
 
-def load_predret():
-    """PredRet Database"""
-    path = importlib_resources.files("cmmrt.data").joinpath("predret.csv")
-    return pd.read_csv(path).drop("Unnamed: 0", axis=1)
-
 class FeaturizedRtData(ABC):
     """Class representing featurized molecules with either fingerprints or descriptors or both, and their associated
     retention times.
@@ -49,10 +44,6 @@ class FeaturizedRtData(ABC):
         self.X = self.X.astype('float32')
         self.y = self.y.astype('float32')
 
-    @abstractmethod
-    def _create_dict_dataset(self, download_directory):
-        """Returns a dictionary with X, y, desc_cols, fgp_cols"""
-        pass
 
     @property
     def fingerprints(self):
@@ -202,52 +193,3 @@ def binary_features_cols(X):
     """
     return np.where(np.apply_along_axis(is_binary_feature, 0, X))[0]
 
-
-def load_cmm_fingerprints(download_directory="rt_data"):
-    """Load Alvadesc fingerprints of all molecules included in Ceu Mass Mediator (CMM)"""
-    filename = os.path.join(download_directory, "CMM_vectorfingerprints.csv")
-    if not os.path.exists(filename):
-        if not os.path.exists(os.path.dirname(filename)):
-            os.mkdir(os.path.dirname(filename))
-        import gdown
-        gdown.download("https://drive.google.com/u/0/uc?id=1PkFySaZSD0PGH_MrLrcDKyC43PvxeXrJ&export=download&confirm=t",
-                       filename)
-    return pd.read_csv(filename)
-
-
-class PredRetFeaturizedSystem(FeaturizedRtData):
-    def __init__(self, system, download_directory="rt_data"):
-        """Class to load the retention times from a specific CM of the PredRet database, together with the Alvadesc's fingerprints
-        of each molecule.
-        """
-        self.system = system
-        super().__init__(f"{system}_with_alvadesc_features.pklz", download_directory)
-
-    def _create_dict_dataset(self, download_directory):
-        predret = load_predret(download_directory)
-        cmm_fingerprints = load_cmm_fingerprints(download_directory)
-        cmm_fingerprints = cmm_fingerprints[cmm_fingerprints.pid != "\\N"].astype({'pid': 'int'})
-        system_data = predret.loc[predret["System"] == self.system]
-        fgp_and_rts = pd.merge(
-            cmm_fingerprints.drop(['CMM_id'], axis=1),
-            system_data.drop(['Name', 'System'], axis=1).rename(columns={'Pubchem': 'pid', 'RT': 'rt'}).astype(
-                {'pid': 'int'}),
-            on='pid'
-        )
-        if fgp_and_rts.shape[0] == 0:
-            raise ValueError(f"No molecules found for system {self.system}")
-
-        X = fgp_and_rts.drop(['pid', 'rt'], axis=1).values.astype('float32')
-        y = fgp_and_rts.rt.values.astype('float32')
-        return {
-            'X': X,
-            'y': y,
-            'desc_cols': np.array([], dtype='int'),
-            'fgp_cols': np.arange(X.shape[1], dtype='int')
-        }
-
-
-if __name__ == "__main__":
-    a = pd.read_csv("rt_data/CMM_vectorfingerprints.csv")
-    b = load_cmm_fingerprints("/tmp")
-    print(a.compare(b))

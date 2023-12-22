@@ -73,7 +73,7 @@ def create_base_parser(default_storage, default_study, description=""):
                         help="Percentage of the training set to train the base classifiers. The remainder is used to "
                              "train the meta-classifier")
     parser.add_argument('--param_search_folds', type=int, default=5, help='Number of folds to be used in param search')
-    parser.add_argument('--trials', type=int, default=10, help='Number of trials in param search')
+    parser.add_argument('--trials', type=int, default=500, help='Number of trials in param search')
     parser.add_argument('--smoke_test', action='store_true',
                         help='Use small model and subsample training data for quick testing. '
                              'param_search_folds and trials are also overridden')
@@ -84,7 +84,7 @@ def create_base_parser(default_storage, default_study, description=""):
 def create_cv_parser(default_storage, default_study, description):
     """Command line parser for validating all models"""
     parser = create_base_parser(default_storage=default_storage, default_study=default_study, description=description)
-    parser.add_argument("--cv_folds", type=int, default=5, help="Number of folds to be used for CV")
+    parser.add_argument("--cv_folds", type=int, default=10, help="Number of folds to be used for CV")
     parser.add_argument("--csv_output", type=str, default=os.path.join(tempfile.gettempdir(), "cv_results.csv"),
                         help="CSV file to store the CV results")
     return parser
