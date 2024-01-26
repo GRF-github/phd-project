@@ -9,8 +9,10 @@ described in:
 Used to create the yml file:
 conda env create -f environment.yml
 
-You can:
+You can create your environment as follows:
 conda env create -f environment.yml --name cmmrt_env
+
+How to activate your environment:
 conda activate cmmrt_env
 
 

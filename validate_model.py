@@ -29,6 +29,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import median_absolute_error
+from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.model_selection import StratifiedKFold
 
 
@@ -104,27 +105,29 @@ if __name__ == '__main__':
 
     alvadesc_data, param_search_config = load_data_and_configs(args, download_directory="rt_data")
 
-    cv_folds = 2 if args.smoke_test else args.cv_folds
     cv = StratifiedKFold(n_splits=cv_folds, shuffle=True, random_state=args.random_state + 500)
     strats = stratify_y(alvadesc_data.y)
 
-    metrics = {'mae': mean_absolute_error, 'medae': median_absolute_error}
+    metrics = {'mae': mean_absolute_error, 'medae': median_absolute_error, 'mape': mean_absolute_percentage_error}
 
     base_study_name = param_search_config.study_prefix
+
     results = []
     for fold, (train_index, test_index) in enumerate(cv.split(alvadesc_data.X, strats)):
-        # FIXME: should replace namedTuples with recordtype to avoid next line
         param_search_config = param_search_config._replace(study_prefix=base_study_name + f"-fold-{fold}")
         alvadesc_train = alvadesc_data[train_index]
         alvadesc_test = alvadesc_data[test_index]
 
-        preprocessor, dnn = (
-            tune_and_fit(alvadesc_data, param_search_config=param_search_config)
-        )
+        preprocessor, dnn = (tune_and_fit(alvadesc_data, param_search_config=param_search_config))
         X_test = preprocessor.transform(alvadesc_test.X)
-        results.append(
-            evaluate_dnn(dnn, X_test, alvadesc_test.y, metrics, fold)
-        )
+
+        results.append(evaluate_dnn(dnn, X_test, alvadesc_test.y, metrics, fold))
+
+        # Temporary code
+        print(f"Saving intermediate results results:")
+        intermediate_results = pd.concat(results, axis=0)
+        intermediate_results.to_csv(f"./results/partial_results{len(results)}.txt", index=False)
+
     results = pd.concat(results, axis=0)
 
     print(f"Saving results to {args.csv_output}")

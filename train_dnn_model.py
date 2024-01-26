@@ -72,9 +72,6 @@ def create_train_parser(default_storage, default_study):
                         help='Study name to identify param search results withing the DB')
     parser.add_argument('--param_search_folds', type=int, default=5, help='Number of folds to be used in param search')
     parser.add_argument('--trials', type=int, default=10, help='Number of trials in param search')
-    parser.add_argument('--smoke_test', action='store_true',
-                        help='Use small model and subsample training data for quick testing. '
-                             'param_search_folds and trials are also overridden')
     parser.add_argument('--random_state', type=int, default=42,
                         help='Random state for reproducibility or reusing param search results')
     parser.add_argument('--save_to', type=str, default='.', help='folder where to save the preprocessor and regressor models')
@@ -83,13 +80,6 @@ def create_train_parser(default_storage, default_study):
 
 def load_data_and_configs(args, download_directory):
     alvadesc_data = AlvadescDataset(download_directory)
-    print(args.smoke_test)
-    if args.smoke_test:
-        print(" ******* USING SMOKE TEST **********")
-        idx = np.random.choice(np.arange(alvadesc_data.X.shape[0]), 2000, replace=False)
-        alvadesc_data = alvadesc_data[idx]
-        args.param_search_folds = 2
-        args.trials = 2
 
     param_search_config = ParamSearchConfig(
         storage=args.storage,

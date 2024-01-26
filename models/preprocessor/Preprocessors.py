@@ -1,21 +1,9 @@
-import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.base import TransformerMixin
-from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import VarianceThreshold
-from sklearn.feature_selection import f_regression
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-
-from models.gbm.xgboost import create_clf
-from models.gbm.xgboost import train_clf
-from models.preprocessor.ThresholdSelectors import CorThreshold
-from data import binary_features_cols
-from data import is_non_retained
 
 
-class Preprocessor(BaseEstimator, TransformerMixin):
+"""""class Preprocessor(BaseEstimator, TransformerMixin):
     def __init__(self, storage, study_prefix, desc_cols, fgp_cols, n_trials, search_cv,
                  p=0.99, cor_th=0.9, k='all'):
         self.storage = storage
@@ -85,7 +73,7 @@ class Preprocessor(BaseEstimator, TransformerMixin):
     def _predict_clf_proba(self, X, y=None):
         X_fgp = X[:, self.fgp_cols]
         X_fgp_proc = self._fgp_vs.transform(X_fgp)
-        return self._clf.predict_proba(X_fgp_proc).astype('float32')
+        return self._clf.predict_proba(X_fgp_proc).astype('float32')"""""
 
 
 class FgpPreprocessor(BaseEstimator, TransformerMixin):
@@ -99,14 +87,11 @@ class FgpPreprocessor(BaseEstimator, TransformerMixin):
 
     def _init_hidden_models(self):
         self._fgp_vs = VarianceThreshold(threshold=self.p * (1 - self.p))
-        # self._clf = create_clf()
 
     def fit(self, X, y=None):
         self._init_hidden_models()
         X_fgp = X[:, self.fgp_cols]
-        X_fgp_proc = self._fgp_vs.fit_transform(X_fgp)
-        # self._clf = train_clf(self._clf, X_fgp_proc, is_non_retained(y), self.n_trials, self.search_cv,
-        #                       storage=self.storage, study_prefix=self.study_prefix)
+        _ = self._fgp_vs.fit_transform(X_fgp)
         return self
 
     def transform(self, X, y=None):
