@@ -13,11 +13,11 @@ from sklearn.model_selection import RepeatedKFold
 from collections import namedtuple
 
 # Parameters
-amount_of_data = 2000  # default all        minimum 2000
-number_of_folds = 2  # default 10           minimum 2
-number_of_trials = 1  # default 100         minimum 1
-param_search_folds = 2  # default 5         minimum 2
-param_search_trials = 1  # default 3        minimum 1
+amount_of_data = "All"  # default all        minimum 2000
+number_of_folds = 10  # default 10           minimum 2
+number_of_trials = 100  # default 100         minimum 1
+param_search_folds = 5  # default 5         minimum 2
+param_search_trials = 3  # default 3        minimum 1
 
 # Load data
 print("Loading data")
