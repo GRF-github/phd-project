@@ -15,9 +15,8 @@ from collections import namedtuple
 # Parameters
 amount_of_data = "All"  # default all        minimum 2000
 number_of_folds = 5  # default 10           minimum 2
-number_of_trials = 100  # default 100         minimum 1
-param_search_folds = 2  # default 5         minimum 2
-param_search_trials = 1  # default 3        minimum 1
+number_of_trials = 50  # default 100         minimum 1
+param_search_folds = 5  # default 5         minimum 2
 
 # Load data
 print("Loading data")
@@ -39,8 +38,8 @@ def stratify_y(y, n_strats=6):
 ParamSearchConfig = namedtuple('ParamSearchConfig', ['storage', 'study_prefix', 'param_search_cv', 'n_trials'])
 param_search_config = ParamSearchConfig(
         storage="sqlite:///./results/cv.db",
-        study_prefix="study",
-        param_search_cv=RepeatedKFold(n_splits=param_search_folds, n_repeats=param_search_trials, random_state=42),
+        study_prefix="FGP-NNET",
+        param_search_cv=RepeatedKFold(n_splits=param_search_folds, n_repeats=1, random_state=42),
         n_trials=number_of_trials)
 
 cross_validation = StratifiedKFold(n_splits=number_of_folds, shuffle=True, random_state=42)

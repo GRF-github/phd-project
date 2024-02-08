@@ -17,7 +17,7 @@ from models.gbm.xgboost import SelectiveXGBRegressor
 from models.ensemble.Blender import Blender
 from models.gp.DKL import SkDKL
 from models.nn.SkDnn import SkDnn
-from train.loss import truncated_medae_scorer
+from train.loss import truncated_medae_scorer, truncated_rmse_scorer
 
 
 @singledispatch
