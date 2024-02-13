@@ -13,14 +13,22 @@ from sklearn.model_selection import RepeatedKFold
 from collections import namedtuple
 
 # Parameters
+features_list = ["fingerprints", "descriptors", "all"]
+SMOKE = False
+#################
 
-amount_of_data = 1000 #"All"  # default all        minimum 2000
-number_of_folds = 2 #5  # default 10           minimum 2
-number_of_trials = 2 #50  # default 100         minimum 1
-param_search_folds = 2 #5  # default 5         minimum 2
-param_search_folds = 2 #5  # default 5         minimum 2
-features_list = ["all", "descriptors", "fingerprints"]
-
+if SMOKE:
+    amount_of_data = 2000
+    number_of_folds = 2
+    number_of_trials = 1
+    param_search_folds = 2
+    database = "sqlite:///./results/smokeDatabaseYouCanDeleteMe.db"
+else:
+    amount_of_data = "All"  # default all        minimum 2000
+    number_of_folds = 5  # default 10           minimum 2
+    number_of_trials = 100  # default 100         minimum 1
+    param_search_folds = 5  # default 5         minimum 2
+    database = "sqlite:///./results/cv.db"
 
 
 def stratify_y(y, n_strats=6):
@@ -46,11 +54,11 @@ if __name__=="__main__":
         ParamSearchConfig = namedtuple('ParamSearchConfig', ['storage', 'study_prefix', 'param_search_cv', 'n_trials'])
         base_prefix = f"{features}-nnet"
         param_search_config = ParamSearchConfig(
-                storage="sqlite:///./results/cv.db",
+                storage=database,
                 study_prefix=base_prefix,
                 param_search_cv=RepeatedKFold(n_splits=param_search_folds, n_repeats=1, random_state=42),
-                n_trials=number_of_trials)
-
+                n_trials=number_of_trials
+        )
         cross_validation = StratifiedKFold(n_splits=number_of_folds, shuffle=True, random_state=42)
 
         for fold, (train_index, test_index) in enumerate(cross_validation.split(data.X, stratify_y(data.y))):
