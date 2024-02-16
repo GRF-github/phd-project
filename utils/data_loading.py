@@ -42,8 +42,8 @@ def get_my_data(common_cols):
         X_fgp = descriptors_and_fingerprints[fingerprints.drop(common_cols, axis=1).columns].values
 
         X = np.concatenate([X_desc, X_fgp], axis=1)
-        y = descriptors_and_fingerprints['correct_ccs_avg'].values.flatten(),
-        desc_cols = np.arange(X_desc.shape[1], dtype='int'),
+        y = descriptors_and_fingerprints['correct_ccs_avg'].values.flatten()
+        desc_cols = np.arange(X_desc.shape[1], dtype='int')
         fgp_cols = np.arange(X_desc.shape[1], X.shape[1], dtype='int')
 
         # Save the file that will be use for training

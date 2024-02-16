@@ -13,7 +13,7 @@ from sklearn.model_selection import RepeatedKFold
 from collections import namedtuple
 
 # Parameters
-features_list = ["fingerprints", "descriptors", "all"]
+features_list = ["descriptors", "all", "fingerprints"]
 SMOKE = True
 #################
 
