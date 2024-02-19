@@ -14,7 +14,7 @@ from collections import namedtuple
 
 # Parameters
 features_list = ["descriptors", "all", "fingerprints"]
-SMOKE = True
+SMOKE = False
 #################
 
 if SMOKE:
