@@ -61,7 +61,7 @@ if __name__=="__main__":
             train_split_y = y[train_index]  # Unused
             test_split_X = X[test_index]
             test_split_y = y[test_index]
-
+            # Prepare for XGB
             preprocessor, dnn = (
                 tune_and_fit(X, y, desc_cols, fgp_cols, param_search_config=param_search_config, features=features)
             )
