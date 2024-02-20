@@ -7,7 +7,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from utils.data_loading import get_my_data
 from utils.stratification import stratify_y
-from train_dnn_model import tune_and_fit
+from train_model import tune_and_fit
 
 from sklearn.model_selection import RepeatedKFold
 from collections import namedtuple
@@ -40,54 +40,48 @@ if __name__=="__main__":
         X = X[:amount_of_data]
         y = y[:amount_of_data]
 
-
     results = []
-    for features in features_list:
-        ParamSearchConfig = namedtuple('ParamSearchConfig', ['storage', 'study_prefix', 'param_search_cv', 'n_trials'])
-        base_prefix = f"{features}-nnet"
-        param_search_config = ParamSearchConfig(
-                storage=database,
-                study_prefix=base_prefix,
-                param_search_cv=RepeatedKFold(n_splits=param_search_folds, n_repeats=1, random_state=42),
-                n_trials=number_of_trials
+
+    ParamSearchConfig = namedtuple('ParamSearchConfig', ['storage', 'study_prefix', 'param_search_cv', 'n_trials'])
+    param_search_config = ParamSearchConfig(
+            storage=database,
+            study_prefix="blender",
+            param_search_cv=RepeatedKFold(n_splits=param_search_folds, n_repeats=1, random_state=42),
+            n_trials=number_of_trials
+    )
+    cross_validation = StratifiedKFold(n_splits=number_of_folds, shuffle=True, random_state=42)
+
+    for fold, (train_index, test_index) in enumerate(cross_validation.split(X, stratify_y(y))):
+        param_search_config = param_search_config._replace(
+            study_prefix=f"cv-fold-{fold}"
         )
-        cross_validation = StratifiedKFold(n_splits=number_of_folds, shuffle=True, random_state=42)
+        train_split_X = X[train_index]  # Unused
+        train_split_y = y[train_index]  # Unused
+        test_split_X = X[test_index]
+        test_split_y = y[test_index]
 
-        for fold, (train_index, test_index) in enumerate(cross_validation.split(X, stratify_y(y))):
-            param_search_config = param_search_config._replace(
-                study_prefix=base_prefix + f"-fold-{fold}"
-            )
-            train_split_X = X[train_index]  # Unused
-            train_split_y = y[train_index]  # Unused
-            test_split_X = X[test_index]
-            test_split_y = y[test_index]
-            # Prepare for XGB
-            preprocessor, dnn = (
-                tune_and_fit(X, y, desc_cols, fgp_cols, param_search_config=param_search_config, features=features)
-            )
+        preprocessor, blender = (
+            tune_and_fit(X, y, desc_cols, fgp_cols, param_search_config=param_search_config, features=features)
+        )
 
-            print("Saving preprocessor and DNN")
-            with open(f"./results/preprocessor-{features}-{fold}.pkl", "wb") as f:
-                pickle.dump(preprocessor, f)
-            with open(f"./results/dnn-{features}-{fold}.pkl", "wb") as f:
-                pickle.dump(dnn, f)
+        print("Saving preprocessor and BLENDEr")
+        with open(f"./results/blender-preprocessor-{features}-{fold}.pkl", "wb") as f:
+            pickle.dump(preprocessor, f)
+        with open(f"./results/blender-{fold}.pkl", "wb") as f:
+            pickle.dump(blender, f)
 
-            X_test = preprocessor.transform(test_split_X)
-            metrics = {'mae': mean_absolute_error, 'medae': median_absolute_error, 'mape': mean_absolute_percentage_error}
-            dnn_results = {k: metric(test_split_y, dnn.predict(X_test)) for k, metric in metrics.items()}
-            dnn_results['fold'] = fold
-            dnn_results['features'] = features
-            pd.DataFrame([dnn_results])
-            results.append(pd.DataFrame([dnn_results]))
-
-            # Save all intermediate results
-            print(f"Saving intermediate results:")
-            intermediate_results = pd.concat(results, axis=0)
-            intermediate_results.to_csv(f"./results/partial_results{len(results)}.txt", index=False)
+        X_test = preprocessor.transform(test_split_X)
+        results.append(
+            evaluate_all_estimators(blender, test_split_X, test_split_y, metrics, fold)
+        )
+        # Save all intermediate results
+        print(f"Saving intermediate results:")
+        intermediate_results = pd.concat(results, axis=0)
+        intermediate_results.to_csv(f"./results/blender_partial_results{len(results)}.txt", index=False)
 
     # Print and save final results
     results = pd.concat(results, axis=0)
     print(f"Saving final results")
     print(results)
-    results.to_csv(f"./results/cross_validation_results.txt", index=False)
+    results.to_csv(f"./results/blender_cross_validation_results.txt", index=False)
 
