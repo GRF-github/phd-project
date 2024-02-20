@@ -55,13 +55,15 @@ if __name__=="__main__":
         param_search_config = param_search_config._replace(
             study_prefix=f"cv-fold-{fold}"
         )
-        train_split_X = X[train_index]  # Unused
-        train_split_y = y[train_index]  # Unused
+        train_split_X = X[train_index]
+        train_split_y = y[train_index]
         test_split_X = X[test_index]
         test_split_y = y[test_index]
 
+        # TODO: blender_Config
         preprocessor, blender = (
-            tune_and_fit(X, y, desc_cols, fgp_cols, param_search_config=param_search_config, features=features)
+            tune_and_fit(train_split_X, train_split_y, desc_cols, fgp_cols,
+                         param_search_config=param_search_config, blender_config=blender_config)
         )
 
         print("Saving preprocessor and BLENDEr")

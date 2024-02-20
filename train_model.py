@@ -64,19 +64,15 @@ def create_blender(desc_cols, fgp_cols, binary_cols, blender_config):
     )
 
 # TODO: change the signature of the funciton to X, y, desc_cols, fgp_cols, param_search_config=param_search_config, features=features
-def tune_and_fit(alvadesc_data, param_search_config, blender_config, smoke_test=False):
+def tune_and_fit(X, y, desc_cols, fgp_cols, *, param_search_config, blender_config):
     """Perform hyperparameter search for all models and fit final models using the best configuration."""
     print(f"Starting tune_and_fit with data with dim ({alvadesc_data.X.shape[0]},{alvadesc_data.X.shape[1]})")
     print("Preprocessing...")
     preprocessor = Preprocessor(
-        storage=param_search_config.storage,
-        study_prefix=f'preproc-{param_search_config.study_prefix}',
-        desc_cols=alvadesc_data.desc_cols,
-        fgp_cols=alvadesc_data.fgp_cols,
-        n_trials=param_search_config.n_trials,
-        search_cv=param_search_config.param_search_cv
+        desc_cols=desc_cols,
+        fgp_cols=fgp_cols
     )
-    X_train = preprocessor.fit_transform(alvadesc_data.X, alvadesc_data.y)
+    X_train = preprocessor.fit_transform(X, y)
     features_description = preprocessor.describe_transformed_features()
 
     if smoke_test:
@@ -95,7 +91,7 @@ def tune_and_fit(alvadesc_data, param_search_config, blender_config, smoke_test=
     print("Param search")
     blender = param_search(
         blender,
-        X_train, alvadesc_data.y,
+        X_train, y,
         cv=param_search_config.param_search_cv,
         study=(param_search_config.storage, param_search_config.study_prefix),
         n_trials=param_search_config.n_trials,
