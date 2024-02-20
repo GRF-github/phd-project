@@ -9,7 +9,6 @@ from data import binary_features_cols
 from models.preprocessor.ThresholdSelectors import CorThreshold
 
 
-
 class Preprocessor(BaseEstimator, TransformerMixin):
     def __init__(self, desc_cols, fgp_cols, p=0.99, cor_th=0.9, k='all'):
         """ We assume that the adducts indicators are part of the fgp_cols"""
@@ -40,8 +39,23 @@ class Preprocessor(BaseEstimator, TransformerMixin):
         new_X = np.concatenate([X_desc_proc, X_fgp_proc], axis=1)
         # Annotate which columns are related to descriptors an fingerprints after transformation. Also, annotate which
         # columns can be considered binary
+        self.transformed_desc_cols = np.concatenate([
+            np.arange(X_desc_proc.shape[1]),
+            np.arange(new_X.shape[1]-3, new_X.shape[1])
+        ])
+        self.transformed_fgp_cols = np.arange(X_desc_proc.shape[1], new_X.shape[1], dtype='int')
         self.transformed_binary_cols = binary_features_cols(new_X)
         return new_X
+
+    def describe_transformed_features(self):
+        return {
+            'n_descriptors': len(self.transformed_desc_cols),
+            'n_fgp': len(self.transformed_fgp_cols),
+            'binary_cols': self.transformed_binary_cols,
+            'desc_cols': self.transformed_desc_cols,
+            'fgp_cols': self.transformed_fgp_cols
+        }
+
 
 class DescriptorsPreprocessor(BaseEstimator, TransformerMixin):
     def __init__(self, desc_cols, adduct_cols, cor_th=0.9, k='all'):

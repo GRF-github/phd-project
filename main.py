@@ -13,9 +13,10 @@ from sklearn.model_selection import RepeatedKFold
 from collections import namedtuple
 
 # Parameters
-features_list = ["fingerprints", "descriptors", "all"]
-SMOKE = False
+SMOKE = True
 ################
+
+BlenderConfig = namedtuple('BlenderConfig', ['train_size', 'n_strats', 'random_state'])
 
 if SMOKE:
     print("Running smoke test...")
@@ -31,10 +32,24 @@ else:
     param_search_folds = 5
     database = "sqlite:///./results/cv.db"
 
+def evaluate_all_estimators(blender, X_test, y_test, metrics, fold_number):
+    """Evaluate all estimators in blender on the test set"""
+    iteration_results = []
+    for estimator_name, estimator in blender._fitted_estimators + [('Blender', blender)]:
+        estimator_results = {k: metric(y_test, estimator.predict(X_test)) for k, metric in metrics.items()}
+        estimator_results['estimator'] = estimator_name
+        estimator_results['fold'] = fold_number
+        iteration_results.append(estimator_results)
+    return pd.DataFrame(iteration_results)
 
 if __name__=="__main__":
     # Load data
     print("Loading data")
+    blender_config = BlenderConfig(
+        train_size=0.8,
+        n_strats=6,
+        random_state=3674
+    )
     X, y, desc_cols, fgp_cols = get_my_data(common_cols=['unique_id', 'correct_ccs_avg'])
     if amount_of_data != "All":
         X = X[:amount_of_data]
@@ -60,21 +75,21 @@ if __name__=="__main__":
         test_split_X = X[test_index]
         test_split_y = y[test_index]
 
-        # TODO: blender_Config
         preprocessor, blender = (
             tune_and_fit(train_split_X, train_split_y, desc_cols, fgp_cols,
                          param_search_config=param_search_config, blender_config=blender_config)
         )
 
-        print("Saving preprocessor and BLENDEr")
-        with open(f"./results/blender-preprocessor-{features}-{fold}.pkl", "wb") as f:
+        print("Saving preprocessor and BLENDER")
+        with open(f"./results/blender-preprocessor-{fold}.pkl", "wb") as f:
             pickle.dump(preprocessor, f)
         with open(f"./results/blender-{fold}.pkl", "wb") as f:
             pickle.dump(blender, f)
 
         X_test = preprocessor.transform(test_split_X)
+        metrics = {'mae': mean_absolute_error, 'medae': median_absolute_error, 'mape': mean_absolute_percentage_error}
         results.append(
-            evaluate_all_estimators(blender, test_split_X, test_split_y, metrics, fold)
+            evaluate_all_estimators(blender, X_test, test_split_y, metrics, fold)
         )
         # Save all intermediate results
         print(f"Saving intermediate results:")
