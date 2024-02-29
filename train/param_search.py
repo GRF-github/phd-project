@@ -1,11 +1,8 @@
 from functools import singledispatch
 
-import lightgbm as lgb
 import numpy as np
 import optuna
 from gpytorch.utils.errors import NotPSDError
-from lightgbm import LGBMRegressor
-from optuna.integration import LightGBMTunerCV
 from optuna.trial import TrialState
 from sklearn.base import clone
 from sklearn.ensemble import RandomForestRegressor
@@ -15,7 +12,6 @@ from xgboost import XGBRegressor
 
 from models.gbm.xgboost import SelectiveXGBRegressor
 from models.ensemble.Blender import Blender
-from models.gp.DKL import SkDKL
 from models.nn.SkDnn import SkDnn
 from train.loss import truncated_medae_scorer, truncated_rmse_scorer
 
@@ -59,42 +55,6 @@ def _suggest_xgboost(trial):
         'var_p': trial.suggest_float('var_p', 0.9, 1.0)
     }
     params['n_jobs'] = 1 if params['tree_method'] == 'gpu_hist' else -1
-    return params
-
-
-@suggest_params.register
-def _(estimator: SkDKL, trial):
-    scheduler_patience = trial.suggest_int('scheduler_patience', 5, 20)
-    params = {
-        'kernel': trial.suggest_categorical('kernel', ['linear', 'rbf', 'mixture']),
-        'hidden_1': trial.suggest_categorical('hidden_1', [512, 1024, 2048, 4096]),
-        'hidden_2': trial.suggest_categorical('hidden_2', [64, 128, 256, 512, 1024]),
-        'dropout': trial.suggest_float('dropout', 0, 0.7),
-        'use_bn_out': trial.suggest_categorical('use_bn_out', [True, False]),
-        'lr': trial.suggest_float('lr', 1e-4, 1e-1),
-        'scheduler_patience': scheduler_patience,
-        'early_stopping': trial.suggest_int('early_stopping',
-                                            scheduler_patience + 2, 5 * scheduler_patience + 2),
-        'var_p': trial.suggest_float('var_p', 0.9, 1)
-    }
-    return params
-
-
-@suggest_params.register
-def _(estimator: LGBMRegressor, trial):
-    params = {
-        'objective': 'regression',
-        'verbosity': -1,
-        'boosting_type': 'gbdt',
-        'lambda_l1': trial.suggest_loguniform('lambda_l1', 1e-8, 10.0),
-        'lambda_l2': trial.suggest_loguniform('lambda_l2', 1e-8, 10.0),
-        'num_leaves': trial.suggest_int('num_leaves', 2, 256),
-        'feature_fraction': trial.suggest_float('feature_fraction', 0.4, 1.0),
-        'bagging_fraction': trial.suggest_float('bagging_fraction', 0.4, 1.0),
-        'bagging_freq': trial.suggest_int('bagging_freq', 1, 7),
-        'min_child_samples': trial.suggest_int('min_child_samples', 5, 100),
-    }
-
     return params
 
 
@@ -192,17 +152,6 @@ def param_search(estimator, X, y, cv, study, n_trials, keep_going=False):
 
 
 @param_search.register
-def _(estimator: LGBMRegressor, X, y, cv, study, n_trials, keep_going=False):
-    dtrain = lgb.Dataset(X, label=y)
-    trials = [trial for trial in study.get_trials() if trial.state in [TrialState.COMPLETE, TrialState.PRUNED]]
-    # LightGBMTunerCV always runs 68 trials
-    if len(trials) != 68:
-        tuner = _create_lgbm_tuner(dtrain, study, cv)
-        tuner.run()
-    return load_best_params(estimator, study)
-
-
-@param_search.register
 def _(estimator: Blender, X, y, cv, study, n_trials, keep_going=False):
     # For the blender, the study is expected to consist of a duple: (storage, study_prefix)
     storage, study_prefix = study
@@ -260,19 +209,6 @@ def create_study(model_name, study_prefix, storage):
     )
 
 
-def _create_lgbm_tuner(dtrain, study, cv):
-    params = {
-        "objective": "regression",
-        "metric": "l1",
-        "verbosity": -1,
-        "boosting_type": "gbdt",
-    }
-    tuner = LightGBMTunerCV(
-        params, dtrain, verbose_eval=True, early_stopping_rounds=100, folds=cv, study=study
-    )
-    return tuner
-
-
 @singledispatch
 def set_best_params(estimator, study):
     if study is not None:
@@ -311,8 +247,3 @@ def load_best_params(estimator, study):
         print(f'Study for {type(estimator)} does not exist')
         raise e
 
-
-@load_best_params.register
-def _(estimator: LGBMRegressor, study):
-    tuner = _create_lgbm_tuner(None, study, None)
-    return tuner.best_params
