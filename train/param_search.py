@@ -57,7 +57,7 @@ def _suggest_xgboost(trial):
     params['n_jobs'] = 1 if params['tree_method'] == 'gpu_hist' else -1
     return params
 
-
+"""
 @suggest_params.register
 def _(estimator: SkDnn, trial):
     h1 = trial.suggest_categorical('hidden_1', [512, 1024, 1512, 2048, 4096])
@@ -74,6 +74,24 @@ def _(estimator: SkDnn, trial):
         'swa_epochs': trial.suggest_int('swa_epochs', 5, T0),
         'var_p': trial.suggest_float('var_p', 0.9, 1.0)
     }
+    return params
+"""
+
+
+@suggest_params.register
+def _(estimator: SkDnn, trial):
+    number_of_hidden_layers = trial.suggest_int('num_layers', 1, 5)
+    params = {'activation': trial.suggest_categorical('activation', ['relu', 'leaky_relu', 'gelu', 'swish']),
+              'lr': trial.suggest_categorical('lr', [10**(-i) for i in range(1, 7)]),
+              'annealing_rounds': trial.suggest_int('annealing_rounds', 2, 5),
+              'swa_epochs': trial.suggest_int('swa_epochs', 5, 10),
+              'var_p': trial.suggest_float('var_p', 0.9, 1.0)
+              }
+
+    for hidden_layer in range(1, number_of_hidden_layers + 1):
+        params[f'hidden_{hidden_layer}'] = trial.suggest_categorical(f'hidden_{hidden_layer}', [512, 2048])
+        params[f'dropout_{hidden_layer}'] = trial.suggest_float(f'dropout_{hidden_layer}', 0.0, 0.7)
+
     return params
 
 
