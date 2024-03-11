@@ -50,8 +50,6 @@ class _DnnModel(nn.Module):
         self.dropout = nn.Dropout(dropout_between_layers)
 
     # TODO: NO SE MUY BIEN QUE HACE O HACÍA ESTO, PERO DE TODOS MODOS YA NO LO HACE
-
-
     def forward(self, x):
         for hidden_layer in range(0, len(self.hidden_layers)):
             x = self.dropout(self.activation(self.hidden_layers[hidden_layer](x)))
