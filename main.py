@@ -28,7 +28,7 @@ if SMOKE:
 else:
     amount_of_data = "All"
     number_of_folds = 5
-    number_of_trials = 100
+    number_of_trials = 50
     param_search_folds = 5
     database = "sqlite:///./results/cv.db"
 

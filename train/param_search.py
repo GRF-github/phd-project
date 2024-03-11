@@ -80,17 +80,18 @@ def _(estimator: SkDnn, trial):
 
 @suggest_params.register
 def _(estimator: SkDnn, trial):
-    number_of_hidden_layers = trial.suggest_int('num_layers', 1, 5)
-    params = {'activation': trial.suggest_categorical('activation', ['relu', 'leaky_relu', 'gelu', 'swish']),
-              'lr': trial.suggest_categorical('lr', [10**(-i) for i in range(1, 7)]),
-              'annealing_rounds': trial.suggest_int('annealing_rounds', 2, 5),
-              'swa_epochs': trial.suggest_int('swa_epochs', 5, 10),
-              'var_p': trial.suggest_float('var_p', 0.9, 1.0)
-              }
-
-    for hidden_layer in range(1, number_of_hidden_layers + 1):
-        params[f'hidden_{hidden_layer}'] = trial.suggest_categorical(f'hidden_{hidden_layer}', [512, 2048])
-        params[f'dropout_{hidden_layer}'] = trial.suggest_float(f'dropout_{hidden_layer}', 0.0, 0.7)
+    max_number_of_epochs = trial.suggest_int('max_number_of_epochs', 10, 100)
+    params = {
+        'number_of_hidden_layers': trial.suggest_int('number_of_hidden_layers', 2, 7),
+        'dropout_between_layers': trial.suggest_float('dropout_between_layers', 0, 0.5),
+        'number_of_neurons_per_layer': trial.suggest_categorical('number_of_neurons_per_layer', [512, 1024]),
+        'max_number_of_epochs': max_number_of_epochs,
+        'activation': trial.suggest_categorical('activation', ['relu', 'leaky_relu', 'gelu', 'swish']),
+        'lr': trial.suggest_float('lr', 10**(-5), 10**(-2), log=True),
+        'annealing_rounds': trial.suggest_int('annealing_rounds', 2, 5),
+        'swa_epochs': trial.suggest_int('swa_epochs', 5, max_number_of_epochs),
+        'var_p': trial.suggest_float('var_p', 0.9, 1.0)
+    }
 
     return params
 

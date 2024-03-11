@@ -21,15 +21,23 @@ def get_default_device():
 
 
 class _DnnModel(nn.Module):
-    def __init__(self, n_features, hidden_1=1512, hidden_2=128, dropout_1=0.5, dropout_2=0.1, activation='gelu'):
+    def __init__(self, n_features, number_of_neurons_per_layer=512, number_of_hidden_layers=2, dropout_between_layers=0, activation='gelu'):
         super().__init__()
-        self.l1 = nn.Linear(n_features, hidden_1)
-        nn.init.zeros_(self.l1.bias)
-        self.d1 = nn.Dropout(dropout_1)
-        self.l2 = nn.Linear(hidden_1, hidden_2)
-        nn.init.zeros_(self.l2.bias)
-        self.d2 = nn.Dropout(dropout_2)
-        self.l_out = nn.Linear(hidden_2, 1)
+        # TODO: NO LLEGAN LOS PARÁMETROS!!!
+
+        self.hidden_layers = []
+        # First hidden layer
+        self.hidden_layers.append(nn.Linear(n_features, number_of_neurons_per_layer))
+        nn.init.zeros_(self.hidden_layers[0].bias)
+
+        # Intermediate hidden layers
+        for hidden_layer in range(1, number_of_hidden_layers):
+            print(hidden_layer)
+            self.hidden_layers.append(nn.Linear(number_of_neurons_per_layer, number_of_neurons_per_layer))
+            nn.init.zeros_(self.hidden_layers[hidden_layer].bias)
+
+        # Output layer
+        self.l_out = nn.Linear(number_of_neurons_per_layer, 1)
         nn.init.zeros_(self.l_out.bias)
         if activation == 'relu':
             self.activation = F.relu
@@ -39,28 +47,32 @@ class _DnnModel(nn.Module):
             self.activation = F.gelu
         elif activation == 'swish':
             self.activation = F.silu
+        self.dropout = nn.Dropout(dropout_between_layers)
+
+    # TODO: NO SE MUY BIEN QUE HACE O HACÍA ESTO, PERO DE TODOS MODOS YA NO LO HACE
+
 
     def forward(self, x):
-        x = self.d1(self.activation(self.l1(x)))
-        x = self.d2(self.activation(self.l2(x)))
+        for hidden_layer in range(0, len(self.hidden_layers)):
+            x = self.dropout(self.activation(self.hidden_layers[hidden_layer](x)))
         return self.l_out(x)
 
 
 class _SkDnn(BaseEstimator, RegressorMixin):
-    def __init__(self, hidden_1=1512, hidden_2=128, dropout_1=0.5, dropout_2=0.1, activation='gelu',
-                 lr=3e-4, T0=30, annealing_rounds=2, swa_epochs=20, batch_size=64, device=get_default_device()):
+    def __init__(self, number_of_hidden_layers=2, dropout_between_layers=0, activation='gelu', number_of_neurons_per_layer=512,
+                 lr=3e-4, max_number_of_epochs=30, annealing_rounds=2, swa_epochs=20, batch_size=64, device=get_default_device()):
         args, _, _, values = inspect.getargvalues(inspect.currentframe())
         values.pop("self")
         for arg, val in values.items():
             setattr(self, arg, val)
-        self.n_epochs = self.annealing_rounds * self.T0
+        self.n_epochs = self.annealing_rounds * self.max_number_of_epochs
 
     def _init_hidden_model(self, n_features):
         self._model = _DnnModel(n_features).to(self.device)
         min_lr = 0.1 * self.lr
         self._optimizer = torch.optim.Adam(self._model.parameters(), lr=self.lr)
         self._scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-            self._optimizer, T_0=self.T0, T_mult=1, eta_min=min_lr
+            self._optimizer, T_0=self.max_number_of_epochs, T_mult=1, eta_min=min_lr
         )
         self._swa_model = AveragedModel(self._model)
         self._swa_scheduler = SWALR(self._optimizer, swa_lr=min_lr)
@@ -117,8 +129,9 @@ class _SkDnn(BaseEstimator, RegressorMixin):
 
 
 class SkDnn(RTRegressor):
-    def __init__(self, hidden_1=1512, hidden_2=128, dropout_1=0.5, dropout_2=0.1, activation='gelu', lr=3e-4, T0=30,
-                 annealing_rounds=2, swa_epochs=20, batch_size=64, device=get_default_device(),
+    def __init__(self, number_of_hidden_layers=2, dropout_between_layers=0, activation='gelu', number_of_neurons_per_layer=512,
+                 lr=3e-4, max_number_of_epochs=30, annealing_rounds=2, swa_epochs=20, batch_size=32,
+                 device=get_default_device(),
                  use_col_indices='all',
                  binary_col_indices=None, var_p=0, transform_output=True):
         super().__init__(use_col_indices, binary_col_indices, var_p, transform_output)
