@@ -24,4 +24,4 @@ def save_preprocessor_and_blender(preprocessor, blender, test_split_X, test_spli
     X_test = preprocessor.transform(test_split_X)
     metrics = {'mae': mean_absolute_error, 'medae': median_absolute_error, 'mape': mean_absolute_percentage_error}
     results.append(
-        _evaluate_all_estimators(blender, X_test, test_split_y, metrics, fold)
+        _evaluate_all_estimators(blender, X_test, test_split_y, metrics, fold))
