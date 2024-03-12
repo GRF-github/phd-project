@@ -21,21 +21,17 @@ def get_default_device():
 
 
 class _DnnModel(nn.Module):
-    def __init__(self, n_features, number_of_neurons_per_layer=512, number_of_hidden_layers=2, dropout_between_layers=0, activation='gelu'):
+    def __init__(self, *, n_features, number_of_hidden_layers, dropout_between_layers, activation,
+                 number_of_neurons_per_layer):
         super().__init__()
-        # TODO: NO LLEGAN LOS PARÁMETROS!!!
-
-        self.hidden_layers = []
-        # First hidden layer
-        self.hidden_layers.append(nn.Linear(n_features, number_of_neurons_per_layer))
-        nn.init.zeros_(self.hidden_layers[0].bias)
-
+        layers = [nn.Linear(n_features, number_of_neurons_per_layer)]
+        nn.init.zeros_(layers[0].bias)
         # Intermediate hidden layers
-        for hidden_layer in range(1, number_of_hidden_layers):
-            print(hidden_layer)
-            self.hidden_layers.append(nn.Linear(number_of_neurons_per_layer, number_of_neurons_per_layer))
-            nn.init.zeros_(self.hidden_layers[hidden_layer].bias)
-
+        for _ in range(1, number_of_hidden_layers):
+            layer = nn.Linear(number_of_neurons_per_layer, number_of_neurons_per_layer)
+            nn.init.zeros_(layer.bias)
+            layers.append(layer)
+        self.hidden_layers = nn.ModuleList(layers)
         # Output layer
         self.l_out = nn.Linear(number_of_neurons_per_layer, 1)
         nn.init.zeros_(self.l_out.bias)
@@ -49,16 +45,16 @@ class _DnnModel(nn.Module):
             self.activation = F.silu
         self.dropout = nn.Dropout(dropout_between_layers)
 
-    # TODO: NO SE MUY BIEN QUE HACE O HACÍA ESTO, PERO DE TODOS MODOS YA NO LO HACE
     def forward(self, x):
-        for hidden_layer in range(0, len(self.hidden_layers)):
-            x = self.dropout(self.activation(self.hidden_layers[hidden_layer](x)))
+        for hidden_layer in self.hidden_layers:
+            x = self.dropout(self.activation(hidden_layer(x)))
         return self.l_out(x)
 
 
 class _SkDnn(BaseEstimator, RegressorMixin):
-    def __init__(self, number_of_hidden_layers=2, dropout_between_layers=0, activation='gelu', number_of_neurons_per_layer=512,
-                 lr=3e-4, max_number_of_epochs=30, annealing_rounds=2, swa_epochs=20, batch_size=64, device=get_default_device()):
+    def __init__(self, number_of_hidden_layers, dropout_between_layers, activation,
+                 number_of_neurons_per_layer, lr, max_number_of_epochs, annealing_rounds, swa_epochs,
+                 batch_size, device=get_default_device()):
         args, _, _, values = inspect.getargvalues(inspect.currentframe())
         values.pop("self")
         for arg, val in values.items():
@@ -66,7 +62,11 @@ class _SkDnn(BaseEstimator, RegressorMixin):
         self.n_epochs = self.annealing_rounds * self.max_number_of_epochs
 
     def _init_hidden_model(self, n_features):
-        self._model = _DnnModel(n_features).to(self.device)
+        self._model = _DnnModel(
+            n_features=n_features, number_of_hidden_layers=self.number_of_hidden_layers,
+            dropout_between_layers=self.dropout_between_layers, activation=self.activation,
+            number_of_neurons_per_layer=self.number_of_neurons_per_layer,
+        ).to(self.device)
         min_lr = 0.1 * self.lr
         self._optimizer = torch.optim.Adam(self._model.parameters(), lr=self.lr)
         self._scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
@@ -127,11 +127,12 @@ class _SkDnn(BaseEstimator, RegressorMixin):
 
 
 class SkDnn(RTRegressor):
-    def __init__(self, number_of_hidden_layers=2, dropout_between_layers=0, activation='gelu', number_of_neurons_per_layer=512,
-                 lr=3e-4, max_number_of_epochs=30, annealing_rounds=2, swa_epochs=20, batch_size=32,
+    def __init__(self, number_of_hidden_layers=2, dropout_between_layers=0, activation='gelu',
+                 number_of_neurons_per_layer=512,
+                 lr=3e-4, max_number_of_epochs=30, annealing_rounds=2, swa_epochs=20, batch_size=32, var_p=0.9,
                  device=get_default_device(),
                  use_col_indices='all',
-                 binary_col_indices=None, var_p=0, transform_output=True):
+                 binary_col_indices=None, transform_output=True):
         super().__init__(use_col_indices, binary_col_indices, var_p, transform_output)
         args, _, _, values = inspect.getargvalues(inspect.currentframe())
         values.pop("self")

@@ -92,7 +92,6 @@ def _(estimator: SkDnn, trial):
         'swa_epochs': trial.suggest_int('swa_epochs', 5, max_number_of_epochs),
         'var_p': trial.suggest_float('var_p', 0.9, 1.0)
     }
-
     return params
 
 
