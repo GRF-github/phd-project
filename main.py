@@ -13,20 +13,18 @@ from sklearn.model_selection import RepeatedKFold
 from collections import namedtuple
 
 # Parameters
-SMOKE = True
+is_smoke_test = True
 ################
 
 BlenderConfig = namedtuple('BlenderConfig', ['train_size', 'n_strats', 'random_state'])
 
-if SMOKE:
+if is_smoke_test:
     print("Running smoke test...")
-    amount_of_data = 2000
     number_of_folds = 2
     number_of_trials = 1
     param_search_folds = 2
     database = "sqlite:///./results/smokeDatabaseYouCanDeleteMe.db"
 else:
-    amount_of_data = "All"
     number_of_folds = 5
     number_of_trials = 50
     param_search_folds = 5
@@ -50,10 +48,7 @@ if __name__=="__main__":
         n_strats=6,
         random_state=3674
     )
-    X, y, desc_cols, fgp_cols = get_my_data(common_cols=['unique_id', 'correct_ccs_avg'])
-    if amount_of_data != "All":
-        X = X[:amount_of_data]
-        y = y[:amount_of_data]
+    X, y, desc_cols, fgp_cols = get_my_data(common_cols=['unique_id', 'correct_ccs_avg'], is_smoke_test=is_smoke_test)
 
     results = []
 
