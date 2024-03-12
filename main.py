@@ -1,11 +1,8 @@
 import pandas as pd
-import pickle
-from sklearn.metrics import mean_absolute_error
-from sklearn.metrics import median_absolute_error
-from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.model_selection import StratifiedKFold
 
 from utils.data_loading import get_my_data
+from utils.data_saving import save_preprocessor_and_blender
 from utils.stratification import stratify_y
 from train_model import tune_and_fit
 
@@ -30,17 +27,8 @@ else:
     param_search_folds = 5
     database = "sqlite:///./results/cv.db"
 
-def evaluate_all_estimators(blender, X_test, y_test, metrics, fold_number):
-    """Evaluate all estimators in blender on the test set"""
-    iteration_results = []
-    for estimator_name, estimator in blender._fitted_estimators + [('Blender', blender)]:
-        estimator_results = {k: metric(y_test, estimator.predict(X_test)) for k, metric in metrics.items()}
-        estimator_results['estimator'] = estimator_name
-        estimator_results['fold'] = fold_number
-        iteration_results.append(estimator_results)
-    return pd.DataFrame(iteration_results)
 
-if __name__=="__main__":
+if __name__ == "__main__":
     # Load data
     print("Loading data")
     blender_config = BlenderConfig(
@@ -75,17 +63,8 @@ if __name__=="__main__":
                          param_search_config=param_search_config, blender_config=blender_config)
         )
 
-        print("Saving preprocessor and BLENDER")
-        with open(f"./results/blender-preprocessor-{fold}.pkl", "wb") as f:
-            pickle.dump(preprocessor, f)
-        with open(f"./results/blender-{fold}.pkl", "wb") as f:
-            pickle.dump(blender, f)
+        save_preprocessor_and_blender(preprocessor, blender, test_split_X, test_split_y, results, fold)
 
-        X_test = preprocessor.transform(test_split_X)
-        metrics = {'mae': mean_absolute_error, 'medae': median_absolute_error, 'mape': mean_absolute_percentage_error}
-        results.append(
-            evaluate_all_estimators(blender, X_test, test_split_y, metrics, fold)
-        )
         # Save all intermediate results
         print(f"Saving intermediate results:")
         intermediate_results = pd.concat(results, axis=0)
