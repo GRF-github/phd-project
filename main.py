@@ -4,6 +4,7 @@ from sklearn.model_selection import StratifiedKFold
 from utils.data_loading import get_my_data
 from utils.data_saving import save_preprocessor_and_blender
 from utils.stratification import stratify_y
+from utils.evaluation import evaluate_model
 from train_model import tune_and_fit
 
 from sklearn.model_selection import RepeatedKFold
@@ -12,8 +13,6 @@ from collections import namedtuple
 # Parameters
 is_smoke_test = True
 ################
-
-BlenderConfig = namedtuple('BlenderConfig', ['train_size', 'n_strats', 'random_state'])
 
 if is_smoke_test:
     print("Running smoke test...")
@@ -31,14 +30,10 @@ else:
 if __name__ == "__main__":
     # Load data
     print("Loading data")
-    blender_config = BlenderConfig(
-        train_size=0.8,
-        n_strats=6,
-        random_state=3674
-    )
     X, y, desc_cols, fgp_cols = get_my_data(common_cols=['unique_id', 'correct_ccs_avg'], is_smoke_test=is_smoke_test)
 
-    results = []
+    BlenderConfig = namedtuple('BlenderConfig', ['train_size', 'n_strats', 'random_state'])
+    blender_config = BlenderConfig(train_size=0.8, n_strats=6, random_state=3674)
 
     ParamSearchConfig = namedtuple('ParamSearchConfig', ['storage', 'study_prefix', 'param_search_cv', 'n_trials'])
     param_search_config = ParamSearchConfig(
@@ -47,6 +42,7 @@ if __name__ == "__main__":
             param_search_cv=RepeatedKFold(n_splits=param_search_folds, n_repeats=1, random_state=42),
             n_trials=number_of_trials
     )
+
     cross_validation = StratifiedKFold(n_splits=number_of_folds, shuffle=True, random_state=42)
 
     for fold, (train_index, test_index) in enumerate(cross_validation.split(X, stratify_y(y))):
@@ -63,16 +59,6 @@ if __name__ == "__main__":
                          param_search_config=param_search_config, blender_config=blender_config)
         )
 
-        save_preprocessor_and_blender(preprocessor, blender, test_split_X, test_split_y, results, fold)
+        save_preprocessor_and_blender(preprocessor, blender, fold)
 
-        # Save all intermediate results
-        print(f"Saving intermediate results:")
-        intermediate_results = pd.concat(results, axis=0)
-        intermediate_results.to_csv(f"./results/blender_partial_results{len(results)}.txt", index=False)
-
-    # Print and save final results
-    results = pd.concat(results, axis=0)
-    print(f"Saving final results")
-    print(results)
-    results.to_csv(f"./results/blender_cross_validation_results.txt", index=False)
-
+        evaluate_model(blender, preprocessor, test_split_X, test_split_y, fold)

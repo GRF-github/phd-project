@@ -43,7 +43,7 @@ def _suggest_xgboost(trial):
         'learning_rate': trial.suggest_float('learning_rate', 1e-4, 2e-1),
         'booster': trial.suggest_categorical('booster', ['gbtree', 'gblinear']),
         'gamma': trial.suggest_float('gamma', 0, 2),
-        'min_child_weight': trial.suggest_loguniform('min_child_weight', 0.001, 10),
+        'min_child_weight': trial.suggest_float('min_child_weight', 0.001, 10, log=True),
         'subsample': trial.suggest_float('subsample', 0.4, 1.0),
         'reg_alpha': trial.suggest_float('reg_alpha', 0, 5),
         'reg_lambda': trial.suggest_float('reg_lambda', 0, 5),
