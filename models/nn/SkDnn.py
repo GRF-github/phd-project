@@ -23,6 +23,11 @@ def get_default_device():
 class _DnnModel(nn.Module):
     def __init__(self, n_features, hidden_1=1512, hidden_2=128, dropout_1=0.5, dropout_2=0.1, activation='gelu'):
         super().__init__()
+
+        # TEMP
+        print(hidden_1, hidden_2, dropout_1, dropout_2, activation)
+
+
         self.l1 = nn.Linear(n_features, hidden_1)
         nn.init.zeros_(self.l1.bias)
         self.d1 = nn.Dropout(dropout_1)
