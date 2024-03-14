@@ -40,21 +40,19 @@ def _suggest_xgboost(trial):
     params = {
         'n_estimators': trial.suggest_int('n_estimators', 200, 1000),
         'max_depth': trial.suggest_int('max_depth', 1, 31),  # max_depth cannont be greater than 31 to use gpu_hist
-        'learning_rate': trial.suggest_float('learning_rate', 1e-4, 2e-1),
-        'booster': trial.suggest_categorical('booster', ['gbtree', 'gblinear']),
+        'learning_rate': trial.suggest_float('learning_rate', 1e-4, 2e-1, log=True),
         'gamma': trial.suggest_float('gamma', 0, 2),
         'min_child_weight': trial.suggest_float('min_child_weight', 0.001, 10, log=True),
         'subsample': trial.suggest_float('subsample', 0.4, 1.0),
         'reg_alpha': trial.suggest_float('reg_alpha', 0, 5),
         'reg_lambda': trial.suggest_float('reg_lambda', 0, 5),
-        'colsample_bytree': trial.suggest_float('colsample_bytree', 0.4, 1.0),
-        'colsample_bylevel': trial.suggest_float('colsample_bylevel', 0.4, 1.0),
-        'colsample_bynode': trial.suggest_float('colsample_bynode', 0.4, 1.0),
-        'tree_method': trial.suggest_categorical('tree_method', ['exact', 'approx', 'hist']),  # gpu_hist may be added
+        'colsample_bytree': trial.suggest_float('colsample_bytree', 0.4, 1.0), # Merece la pena o siempre el mismo y unificar
+        'colsample_bylevel': trial.suggest_float('colsample_bylevel', 0.4, 1.0), # Merece la pena o siempre el mismo y unificar
+        'colsample_bynode': trial.suggest_float('colsample_bynode', 0.4, 1.0), # Merece la pena o siempre el mismo y unificar
+        'tree_method': trial.suggest_categorical('tree_method', ['approx', 'hist']),  # Merece la pena o siempre el mismo
         'verbosity': 1,
         'var_p': trial.suggest_float('var_p', 0.9, 1.0)
     }
-    params['n_jobs'] = 1 if params['tree_method'] == 'gpu_hist' else -1
     return params
 
 """
@@ -84,7 +82,7 @@ def _(estimator: SkDnn, trial):
     params = {
         'number_of_hidden_layers': trial.suggest_int('number_of_hidden_layers', 2, 7),
         'dropout_between_layers': trial.suggest_float('dropout_between_layers', 0, 0.5),
-        'number_of_neurons_per_layer': trial.suggest_categorical('number_of_neurons_per_layer', [512, 1024]),
+        'number_of_neurons_per_layer': trial.suggest_categorical('number_of_neurons_per_layer', [512, 1024, 2048, 4096]),
         'max_number_of_epochs': max_number_of_epochs,
         'activation': trial.suggest_categorical('activation', ['relu', 'leaky_relu', 'gelu', 'swish']),
         'lr': trial.suggest_float('lr', 10**(-5), 10**(-2), log=True),

@@ -5,8 +5,29 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from data import binary_features_cols
 from models.preprocessor.ThresholdSelectors import CorThreshold
+
+def is_binary_feature(x):
+    """Indicates if the given feature is binary (0 and 1).
+
+    :param x: feature to be checked.
+    :return: Boolean indicating if the given feature is binary.
+    """
+    ux = np.unique(x)
+    if len(ux) == 1:
+        return ux == 0 or ux == 1
+    if len(ux) == 2:
+        return np.all(np.sort(ux) == np.array([0, 1]))
+    else:
+        return False
+
+def binary_features_cols(X):
+    """Get column indices of binary features.
+
+    :param X: numpy array of features.
+    :return: numpy array of column indices of binary features.
+    """
+    return np.where(np.apply_along_axis(is_binary_feature, 0, X))[0]
 
 
 class Preprocessor(BaseEstimator, TransformerMixin):
