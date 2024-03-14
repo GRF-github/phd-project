@@ -1,11 +1,8 @@
 from functools import singledispatch
 
-import lightgbm as lgb
 import numpy as np
 import optuna
 from gpytorch.utils.errors import NotPSDError
-from lightgbm import LGBMRegressor
-from optuna.integration import LightGBMTunerCV
 from optuna.trial import TrialState
 from sklearn.base import clone
 from sklearn.ensemble import RandomForestRegressor
@@ -15,7 +12,6 @@ from xgboost import XGBRegressor
 
 from models.gbm.xgboost import SelectiveXGBRegressor
 from models.ensemble.Blender import Blender
-from models.gp.DKL import SkDKL
 from models.nn.SkDnn import SkDnn
 from train.loss import truncated_medae_scorer, truncated_rmse_scorer
 
@@ -47,7 +43,7 @@ def _suggest_xgboost(trial):
         'learning_rate': trial.suggest_float('learning_rate', 1e-4, 2e-1),
         'booster': trial.suggest_categorical('booster', ['gbtree', 'gblinear']),
         'gamma': trial.suggest_float('gamma', 0, 2),
-        'min_child_weight': trial.suggest_loguniform('min_child_weight', 0.001, 10),
+        'min_child_weight': trial.suggest_float('min_child_weight', 0.001, 10, log=True),
         'subsample': trial.suggest_float('subsample', 0.4, 1.0),
         'reg_alpha': trial.suggest_float('reg_alpha', 0, 5),
         'reg_lambda': trial.suggest_float('reg_lambda', 0, 5),
@@ -61,43 +57,7 @@ def _suggest_xgboost(trial):
     params['n_jobs'] = 1 if params['tree_method'] == 'gpu_hist' else -1
     return params
 
-
-@suggest_params.register
-def _(estimator: SkDKL, trial):
-    scheduler_patience = trial.suggest_int('scheduler_patience', 5, 20)
-    params = {
-        'kernel': trial.suggest_categorical('kernel', ['linear', 'rbf', 'mixture']),
-        'hidden_1': trial.suggest_categorical('hidden_1', [512, 1024, 2048, 4096]),
-        'hidden_2': trial.suggest_categorical('hidden_2', [64, 128, 256, 512, 1024]),
-        'dropout': trial.suggest_float('dropout', 0, 0.7),
-        'use_bn_out': trial.suggest_categorical('use_bn_out', [True, False]),
-        'lr': trial.suggest_float('lr', 1e-4, 1e-1),
-        'scheduler_patience': scheduler_patience,
-        'early_stopping': trial.suggest_int('early_stopping',
-                                            scheduler_patience + 2, 5 * scheduler_patience + 2),
-        'var_p': trial.suggest_float('var_p', 0.9, 1)
-    }
-    return params
-
-
-@suggest_params.register
-def _(estimator: LGBMRegressor, trial):
-    params = {
-        'objective': 'regression',
-        'verbosity': -1,
-        'boosting_type': 'gbdt',
-        'lambda_l1': trial.suggest_loguniform('lambda_l1', 1e-8, 10.0),
-        'lambda_l2': trial.suggest_loguniform('lambda_l2', 1e-8, 10.0),
-        'num_leaves': trial.suggest_int('num_leaves', 2, 256),
-        'feature_fraction': trial.suggest_float('feature_fraction', 0.4, 1.0),
-        'bagging_fraction': trial.suggest_float('bagging_fraction', 0.4, 1.0),
-        'bagging_freq': trial.suggest_int('bagging_freq', 1, 7),
-        'min_child_samples': trial.suggest_int('min_child_samples', 5, 100),
-    }
-
-    return params
-
-
+"""
 @suggest_params.register
 def _(estimator: SkDnn, trial):
     h1 = trial.suggest_categorical('hidden_1', [512, 1024, 1512, 2048, 4096])
@@ -115,6 +75,24 @@ def _(estimator: SkDnn, trial):
         'var_p': trial.suggest_float('var_p', 0.9, 1.0)
     }
     return params
+"""
+
+
+@suggest_params.register
+def _(estimator: SkDnn, trial):
+    max_number_of_epochs = trial.suggest_int('max_number_of_epochs', 10, 100)
+    params = {
+        'number_of_hidden_layers': trial.suggest_int('number_of_hidden_layers', 2, 7),
+        'dropout_between_layers': trial.suggest_float('dropout_between_layers', 0, 0.5),
+        'number_of_neurons_per_layer': trial.suggest_categorical('number_of_neurons_per_layer', [512, 1024]),
+        'max_number_of_epochs': max_number_of_epochs,
+        'activation': trial.suggest_categorical('activation', ['relu', 'leaky_relu', 'gelu', 'swish']),
+        'lr': trial.suggest_float('lr', 10**(-5), 10**(-2), log=True),
+        'annealing_rounds': trial.suggest_int('annealing_rounds', 2, 5),
+        'swa_epochs': trial.suggest_int('swa_epochs', 5, max_number_of_epochs),
+        'var_p': trial.suggest_float('var_p', 0.9, 1.0)
+    }
+    return params
 
 
 @suggest_params.register
@@ -124,7 +102,7 @@ def _(estimator: RandomForestRegressor, trial):
         'max_depth': trial.suggest_int('max_depth', 1, 20),
         'min_samples_split': trial.suggest_int('min_samples_split', 2, 150),
         'min_samples_leaf': trial.suggest_int('min_samples_leaf', 1, 500),
-        'max_features': trial.suggest_categorical('max_features', ["auto", "sqrt", "log2"]),
+        'max_features': trial.suggest_categorical('max_features', ["sqrt", "log2"]),
         'n_jobs': -1
     }
 
@@ -192,17 +170,6 @@ def param_search(estimator, X, y, cv, study, n_trials, keep_going=False):
 
 
 @param_search.register
-def _(estimator: LGBMRegressor, X, y, cv, study, n_trials, keep_going=False):
-    dtrain = lgb.Dataset(X, label=y)
-    trials = [trial for trial in study.get_trials() if trial.state in [TrialState.COMPLETE, TrialState.PRUNED]]
-    # LightGBMTunerCV always runs 68 trials
-    if len(trials) != 68:
-        tuner = _create_lgbm_tuner(dtrain, study, cv)
-        tuner.run()
-    return load_best_params(estimator, study)
-
-
-@param_search.register
 def _(estimator: Blender, X, y, cv, study, n_trials, keep_going=False):
     # For the blender, the study is expected to consist of a duple: (storage, study_prefix)
     storage, study_prefix = study
@@ -260,19 +227,6 @@ def create_study(model_name, study_prefix, storage):
     )
 
 
-def _create_lgbm_tuner(dtrain, study, cv):
-    params = {
-        "objective": "regression",
-        "metric": "l1",
-        "verbosity": -1,
-        "boosting_type": "gbdt",
-    }
-    tuner = LightGBMTunerCV(
-        params, dtrain, verbose_eval=True, early_stopping_rounds=100, folds=cv, study=study
-    )
-    return tuner
-
-
 @singledispatch
 def set_best_params(estimator, study):
     if study is not None:
@@ -311,8 +265,3 @@ def load_best_params(estimator, study):
         print(f'Study for {type(estimator)} does not exist')
         raise e
 
-
-@load_best_params.register
-def _(estimator: LGBMRegressor, study):
-    tuner = _create_lgbm_tuner(None, study, None)
-    return tuner.best_params
