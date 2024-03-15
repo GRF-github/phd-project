@@ -42,13 +42,13 @@ def _suggest_xgboost(trial):
         'max_depth': trial.suggest_int('max_depth', 1, 31),  # max_depth cannont be greater than 31 to use gpu_hist
         'learning_rate': trial.suggest_float('learning_rate', 1e-4, 2e-1, log=True),
         'gamma': trial.suggest_float('gamma', 0, 2),
-        'min_child_weight': trial.suggest_float('min_child_weight', 0.001, 10, log=True),
-        'subsample': trial.suggest_float('subsample', 0.4, 1.0),
+        'min_child_weight': trial.suggest_float('min_child_weight', 0.001, 20, log=True),
+        'subsample': trial.suggest_float('subsample', 0.5, 1.0),
         'reg_alpha': trial.suggest_float('reg_alpha', 0, 5),
         'reg_lambda': trial.suggest_float('reg_lambda', 0, 5),
-        'colsample_bytree': trial.suggest_float('colsample_bytree', 0.4, 1.0), # Merece la pena o siempre el mismo y unificar
-        'colsample_bylevel': trial.suggest_float('colsample_bylevel', 0.4, 1.0), # Merece la pena o siempre el mismo y unificar
-        'colsample_bynode': trial.suggest_float('colsample_bynode', 0.4, 1.0), # Merece la pena o siempre el mismo y unificar
+        'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 1.0), # Merece la pena o siempre el mismo y unificar
+        'colsample_bylevel': trial.suggest_float('colsample_bylevel', 0.5, 1.0), # Merece la pena o siempre el mismo y unificar
+        'colsample_bynode': trial.suggest_float('colsample_bynode', 0.9, 1.0), # Merece la pena o siempre el mismo y unificar
         'tree_method': trial.suggest_categorical('tree_method', ['approx', 'hist']),  # Merece la pena o siempre el mismo
         'verbosity': 1,
         'var_p': trial.suggest_float('var_p', 0.9, 1.0)

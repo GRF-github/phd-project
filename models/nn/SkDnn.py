@@ -9,15 +9,8 @@ from torch.optim.swa_utils import AveragedModel
 from torch.optim.swa_utils import SWALR
 from torch.utils.data import DataLoader
 from torch.utils.data import TensorDataset
-
+from train.torchutils import get_default_device
 from models.base.PipelineWrapper import RTRegressor
-
-
-def get_default_device():
-    if torch.cuda.is_available():
-        return 'cuda'
-    else:
-        return 'cpu'
 
 
 class _DnnModel(nn.Module):
