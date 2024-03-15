@@ -67,7 +67,7 @@ class EarlyStopping:
         model.load_state_dict(torch.load(self.path, map_location=device))
 
 
-def torch_dataloaders(X, y, batch_size, test_size=0.0, n_strats=6):
+def torch_dataloaders(X, y, batch_size, test_size=0.0, n_strats=8):
     if test_size > 0:
         X_train, X_test, y_train, y_test = stratified_train_test_split(
             X, y, test_size=test_size, n_strats=n_strats

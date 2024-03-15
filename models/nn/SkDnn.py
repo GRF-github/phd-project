@@ -17,6 +17,11 @@ class _DnnModel(nn.Module):
     def __init__(self, *, n_features, number_of_hidden_layers, dropout_between_layers, activation,
                  number_of_neurons_per_layer):
         super().__init__()
+
+        # TEMP
+        print(number_of_hidden_layers, dropout_between_layers, activation, number_of_neurons_per_layer)
+
+        self.dropout_p = dropout_between_layers
         layers = [nn.Linear(n_features, number_of_neurons_per_layer)]
         nn.init.zeros_(layers[0].bias)
         # Intermediate hidden layers
@@ -36,11 +41,10 @@ class _DnnModel(nn.Module):
             self.activation = F.gelu
         elif activation == 'swish':
             self.activation = F.silu
-        self.dropout = nn.Dropout(dropout_between_layers)
 
     def forward(self, x):
         for hidden_layer in self.hidden_layers:
-            x = self.dropout(self.activation(hidden_layer(x)))
+            x = F.dropout(self.activation(hidden_layer(x)), self.dropout_p)
         return self.l_out(x)
 
 

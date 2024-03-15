@@ -6,6 +6,7 @@ from xgboost import XGBRegressor
 from models.base.PipelineWrapper import RTRegressor
 
 class CudaXGBRegressor(XGBRegressor):
+    # FIXME: the init of this class accepts device != cuda, which should not happen
     def fit(self, X, y):
         if self.device == "cuda":
             X = cp.array(X)

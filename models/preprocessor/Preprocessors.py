@@ -31,7 +31,7 @@ def binary_features_cols(X):
 
 
 class Preprocessor(BaseEstimator, TransformerMixin):
-    def __init__(self, desc_cols, fgp_cols, p=0.99, cor_th=0.9, k='all'):
+    def __init__(self, desc_cols, fgp_cols, p=0, cor_th=0.9, k='all'):
         """ We assume that the adducts indicators are part of the fgp_cols"""
         self.desc_cols = desc_cols
         self.fgp_cols = fgp_cols

@@ -1,3 +1,4 @@
+import pickle
 from functools import singledispatch
 
 import numpy as np
@@ -5,15 +6,14 @@ import optuna
 from gpytorch.utils.errors import NotPSDError
 from optuna.trial import TrialState
 from sklearn.base import clone
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import ElasticNet
+from sklearn.linear_model import Ridge
 from xgboost import XGBClassifier
 from xgboost import XGBRegressor
 
-from models.gbm.xgboost import SelectiveXGBRegressor
 from models.ensemble.Blender import Blender
+from models.gbm.xgboost import SelectiveXGBRegressor, CudaXGBRegressor
 from models.nn.SkDnn import SkDnn
-from train.loss import truncated_medae_scorer, truncated_rmse_scorer
+from train.loss import truncated_medae_scorer
 
 
 @singledispatch
@@ -32,6 +32,11 @@ def _(estimator: XGBRegressor, trial):
 
 
 @suggest_params.register
+def _(estimator: CudaXGBRegressor, trial):
+    return _suggest_xgboost(trial)
+
+
+@suggest_params.register
 def _(estimator: XGBClassifier, trial):
     return _suggest_xgboost(trial)
 
@@ -39,7 +44,7 @@ def _(estimator: XGBClassifier, trial):
 def _suggest_xgboost(trial):
     params = {
         'n_estimators': trial.suggest_int('n_estimators', 200, 1000),
-        'max_depth': trial.suggest_int('max_depth', 1, 31),  # max_depth cannont be greater than 31 to use gpu_hist
+        'max_depth': trial.suggest_int('max_depth', 1, 31),  # max_depth cannot be greater than 31 to use gpu_hist
         'learning_rate': trial.suggest_float('learning_rate', 1e-4, 2e-1, log=True),
         'gamma': trial.suggest_float('gamma', 0, 2),
         'min_child_weight': trial.suggest_float('min_child_weight', 0.001, 20, log=True),
@@ -88,21 +93,15 @@ def _(estimator: SkDnn, trial):
         'lr': trial.suggest_float('lr', 10**(-5), 10**(-2), log=True),
         'annealing_rounds': trial.suggest_int('annealing_rounds', 2, 5),
         'swa_epochs': trial.suggest_int('swa_epochs', 5, max_number_of_epochs),
-        'var_p': trial.suggest_float('var_p', 0.9, 1.0)
+        'var_p': trial.suggest_float('var_p', 0.9, 1.0),
+        'batch_size': trial.suggest_categorical('batch_size', [8, 16, 32, 64])
     }
     return params
 
 
 @suggest_params.register
-def _(estimator: RandomForestRegressor, trial):
-    return {
-        'n_estimators': trial.suggest_int('n_estimators', 10, 500),
-        'max_depth': trial.suggest_int('max_depth', 1, 20),
-        'min_samples_split': trial.suggest_int('min_samples_split', 2, 150),
-        'min_samples_leaf': trial.suggest_int('min_samples_leaf', 1, 500),
-        'max_features': trial.suggest_categorical('max_features', ["sqrt", "log2"]),
-        'n_jobs': -1
-    }
+def _(estimator: Ridge, trial):
+    return {'alpha': trial.suggest_float('alpha', 0, 20)}
 
 
 def create_objective(estimator, X, y, cv):
@@ -143,15 +142,9 @@ def cross_val_score_with_pruning(estimator, X, y, cv, scoring, trial):
 def final_estimator_study_name(estimator):
     raise NotImplementedError
 
-
 @final_estimator_study_name.register
-def _(estimator: RandomForestRegressor):
-    return 'rf_final_est'
-
-
-@final_estimator_study_name.register
-def _(estimator: ElasticNet):
-    return 'eln_final_est'
+def _(estimator: Ridge):
+    return 'ridge'
 
 
 @singledispatch
@@ -175,17 +168,14 @@ def _(estimator: Blender, X, y, cv, study, n_trials, keep_going=False):
 
     models_with_studies = []
     for model_name, model in estimator.estimators:
-        if 'cb' in model_name:
-            print(f'Skipping optimization for {model_name}')
-            models_with_studies.append((model_name, model, None))
-            continue
-        else:
             model = clone(model)
             study = create_study(model_name, study_prefix, storage)
             models_with_studies.append((model_name, model, study))
             _ = param_search(model, X_train, y_train, cv,
                              study, n_trials, keep_going=keep_going)
 
+    # FIXME
+    raise ValueError("Stopping to prevent blender to train")
     estimator.estimators = [
         (n, set_best_params(clone(model), study)) for n, model, study in models_with_studies
     ]

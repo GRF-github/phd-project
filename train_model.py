@@ -1,5 +1,5 @@
 from collections import namedtuple
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import Ridge
 from models.ensemble.Blender import Blender
 from models.gbm.xgboost import SelectiveXGBRegressor
 from models.nn.SkDnn import SkDnn
@@ -14,20 +14,19 @@ def create_blender(desc_cols, fgp_cols, binary_cols, blender_config):
     """Create a blender model with the specified configuration"""
     estimators = [
         # Deep Neural Nets
-        # FIXME restore skddn
-        #('full_mlp', SkDnn(use_col_indices='all', binary_col_indices=binary_cols, transform_output=True)),
-        #('desc_mlp', SkDnn(use_col_indices=desc_cols, binary_col_indices=binary_cols, transform_output=True)),
-        #('fgp_mlp', SkDnn(use_col_indices=fgp_cols, binary_col_indices=binary_cols, transform_output=True)),
+        ('full_mlp', SkDnn(use_col_indices='all', binary_col_indices=binary_cols, transform_output=True)),
+        ('desc_mlp', SkDnn(use_col_indices=desc_cols, binary_col_indices=binary_cols, transform_output=True)),
+        ('fgp_mlp', SkDnn(use_col_indices=fgp_cols, binary_col_indices=binary_cols, transform_output=True)),
         # XGBoost
         ('full_xgb', SelectiveXGBRegressor(use_col_indices='all', binary_col_indices=binary_cols)),
         ('desc_xgb', SelectiveXGBRegressor(use_col_indices=desc_cols, binary_col_indices=binary_cols)),
         ('fgp_xgb', SelectiveXGBRegressor(use_col_indices=fgp_cols, binary_col_indices=binary_cols))
     ]
     return Blender(
-        estimators, RandomForestRegressor(), **blender_config._asdict()
+        estimators, Ridge(), **blender_config._asdict()
     )
 
-# TODO: change the signature of the funciton to X, y, desc_cols, fgp_cols, param_search_config=param_search_config, features=features
+
 def tune_and_fit(X, y, desc_cols, fgp_cols, *, param_search_config, blender_config):
     """Perform hyperparameter search for all models and fit final models using the best configuration."""
     print(f"Starting tune_and_fit with data with dim ({X.shape[0]},{X.shape[1]})")
@@ -53,7 +52,7 @@ def tune_and_fit(X, y, desc_cols, fgp_cols, *, param_search_config, blender_conf
         cv=param_search_config.param_search_cv,
         study=(param_search_config.storage, param_search_config.study_prefix),
         n_trials=param_search_config.n_trials,
-        keep_going=False
+        keep_going=True
     )
     print("Training")
     blender.fit(X_train, y)
