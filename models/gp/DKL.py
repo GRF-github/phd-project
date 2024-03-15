@@ -144,7 +144,7 @@ class _SkDKL(BaseEstimator, RegressorMixin):
     def fit(self, X, y):
         print(f'SkDKL features-->{X.shape[1]}')
         self._init_models(*X.shape)
-        train_loader, test_loader = torch_dataloaders(X, y, self.batch_size, test_size=self.test_size, n_strats=6)
+        train_loader, test_loader = torch_dataloaders(X, y, self.batch_size, test_size=self.test_size, n_strats=8)
         for epoch in range(self.train_epochs):
             # Train
             self._dkl.feature_extractor.train()
