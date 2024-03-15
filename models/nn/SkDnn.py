@@ -17,10 +17,6 @@ class _DnnModel(nn.Module):
     def __init__(self, *, n_features, number_of_hidden_layers, dropout_between_layers, activation,
                  number_of_neurons_per_layer):
         super().__init__()
-
-        # TEMP
-        print(number_of_hidden_layers, dropout_between_layers, activation, number_of_neurons_per_layer)
-
         self.dropout_p = dropout_between_layers
         layers = [nn.Linear(n_features, number_of_neurons_per_layer)]
         nn.init.zeros_(layers[0].bias)
