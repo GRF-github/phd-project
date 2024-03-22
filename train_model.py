@@ -52,7 +52,7 @@ def tune_and_fit(X, y, desc_cols, fgp_cols, *, param_search_config, blender_conf
         cv=param_search_config.param_search_cv,
         study=(param_search_config.storage, param_search_config.study_prefix),
         n_trials=param_search_config.n_trials,
-        keep_going=True
+        keep_going=False
     )
     print("Training")
     blender.fit(X_train, y)

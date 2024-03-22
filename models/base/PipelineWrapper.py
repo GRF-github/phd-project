@@ -59,7 +59,7 @@ class RTRegressor(PipelineWrapper, RegressorMixin, metaclass=ABCMeta):
             ('regressor', self._init_regressor())
         ])
         if self.transform_output:
-            transformer = QuantileTransformer(n_quantiles=1000, output_distribution='normal')
+            transformer = QuantileTransformer(n_quantiles=1000, output_distribution='normal') # esto
         else:
             transformer = None
         return TransformedTargetRegressor(regressor=base_pipeline, transformer=transformer)

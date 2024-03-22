@@ -21,7 +21,7 @@ if is_smoke_test:
     database = "sqlite:///./results/smokeDatabaseYouCanDeleteMe.db"
 else:
     number_of_folds = 5
-    number_of_trials = 10
+    number_of_trials = 15
     param_search_folds = 5
     database = "sqlite:///./results/cv.db"
 

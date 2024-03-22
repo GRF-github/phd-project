@@ -11,19 +11,22 @@ class CudaXGBRegressor(XGBRegressor):
         if self.device == "cuda":
             X = cp.array(X)
             y = cp.array(y)
-        else:
-            raise ValueError("Cuda XGBRegressor does not support any device other than cuda")
+        # TODO: in the future, rename the class so that is not misleading
+        #else:
+        #   raise ValueError("Cuda XGBRegressor does not support any device other than cuda")
         return super().fit(X, y)
 
 
     def predict(self, X):
         if self.device == "cuda":
             X = cp.array(X)
-        else:
-            raise ValueError("Cuda XGBRegressor does not support any device other than cuda")
+        # TODO: see previous TODO
+        #else:
+        #    raise ValueError("Cuda XGBRegressor does not support any device other than cuda")
         y = super().predict(X)
-        return cp.asnumpy(y)
-
+        if self.device == "cuda":
+            y = cp.asnumpy(y)
+        return y
 
 
 class SelectiveXGBRegressor(RTRegressor):
@@ -39,5 +42,5 @@ class SelectiveXGBRegressor(RTRegressor):
             setattr(self, arg, val)
 
     def _init_regressor(self):
-        return CudaXGBRegressor(**self._rt_regressor_params(), n_jobs=1, booster="gbtree", device="cuda")
+        return CudaXGBRegressor(**self._rt_regressor_params(), n_jobs=-1, booster="gbtree", device="cpu")
 
