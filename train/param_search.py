@@ -174,8 +174,6 @@ def _(estimator: Blender, X, y, cv, study, n_trials, keep_going=False):
             _ = param_search(model, X_train, y_train, cv,
                              study, n_trials, keep_going=keep_going)
 
-    # FIXME
-    raise ValueError("Stopping to prevent blender to train")
     estimator.estimators = [
         (n, set_best_params(clone(model), study)) for n, model, study in models_with_studies
     ]
