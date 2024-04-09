@@ -17,10 +17,6 @@ def create_blender(desc_cols, fgp_cols, binary_cols, blender_config):
         ('full_mlp', SkDnn(use_col_indices='all', binary_col_indices=binary_cols, transform_output=True)),
         ('desc_mlp', SkDnn(use_col_indices=desc_cols, binary_col_indices=binary_cols, transform_output=True)),
         ('fgp_mlp', SkDnn(use_col_indices=fgp_cols, binary_col_indices=binary_cols, transform_output=True)),
-        # XGBoost
-        ('full_xgb', SelectiveXGBRegressor(use_col_indices='all', binary_col_indices=binary_cols)),
-        ('desc_xgb', SelectiveXGBRegressor(use_col_indices=desc_cols, binary_col_indices=binary_cols)),
-        ('fgp_xgb', SelectiveXGBRegressor(use_col_indices=fgp_cols, binary_col_indices=binary_cols))
     ]
     return Blender(
         estimators, Ridge(), **blender_config._asdict()

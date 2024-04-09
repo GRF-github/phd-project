@@ -45,6 +45,8 @@ if __name__ == "__main__":
     cross_validation = StratifiedKFold(n_splits=number_of_folds, shuffle=True, random_state=435)
 
     for fold, (train_index, test_index) in enumerate(cross_validation.split(X, stratify_y(y))):
+        if fold == 0:
+            continue
         param_search_config = param_search_config._replace(
             study_prefix=f"cv-fold-{fold}"
         )
