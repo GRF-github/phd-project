@@ -1,7 +1,6 @@
 from collections import namedtuple
 from sklearn.linear_model import Ridge
 from models.ensemble.Blender import Blender
-from models.gbm.xgboost import SelectiveXGBRegressor
 from models.nn.SkDnn import SkDnn
 from models.preprocessor.Preprocessors import Preprocessor
 from train.param_search import param_search

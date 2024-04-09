@@ -11,7 +11,6 @@ from xgboost import XGBClassifier
 from xgboost import XGBRegressor
 
 from models.ensemble.Blender import Blender
-from models.gbm.xgboost import SelectiveXGBRegressor, CudaXGBRegressor
 from models.nn.SkDnn import SkDnn
 from train.loss import truncated_medae_scorer
 
@@ -19,66 +18,6 @@ from train.loss import truncated_medae_scorer
 @singledispatch
 def suggest_params(estimator, trial):
     raise NotImplementedError
-
-
-@suggest_params.register
-def _(estimator: SelectiveXGBRegressor, trial):
-    return _suggest_xgboost(trial)
-
-
-@suggest_params.register
-def _(estimator: XGBRegressor, trial):
-    return _suggest_xgboost(trial)
-
-
-@suggest_params.register
-def _(estimator: CudaXGBRegressor, trial):
-    return _suggest_xgboost(trial)
-
-
-@suggest_params.register
-def _(estimator: XGBClassifier, trial):
-    return _suggest_xgboost(trial)
-
-
-def _suggest_xgboost(trial):
-    params = {
-        'n_estimators': trial.suggest_int('n_estimators', 200, 1000),
-        'max_depth': trial.suggest_int('max_depth', 1, 31),  # max_depth cannot be greater than 31 to use gpu_hist
-        'learning_rate': trial.suggest_float('learning_rate', 1e-4, 2e-1, log=True),
-        'gamma': trial.suggest_float('gamma', 0, 2),
-        'min_child_weight': trial.suggest_float('min_child_weight', 0.001, 20, log=True),
-        'subsample': trial.suggest_float('subsample', 0.5, 1.0),
-        'reg_alpha': trial.suggest_float('reg_alpha', 0, 5),
-        'reg_lambda': trial.suggest_float('reg_lambda', 0, 5),
-        'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 1.0), # Merece la pena o siempre el mismo y unificar
-        'colsample_bylevel': trial.suggest_float('colsample_bylevel', 0.5, 1.0), # Merece la pena o siempre el mismo y unificar
-        'colsample_bynode': trial.suggest_float('colsample_bynode', 0.9, 1.0), # Merece la pena o siempre el mismo y unificar
-        'tree_method': trial.suggest_categorical('tree_method', ['approx', 'hist']),  # Merece la pena o siempre el mismo
-        'verbosity': 1,
-        'var_p': trial.suggest_float('var_p', 0.9, 1.0)
-    }
-    return params
-
-"""
-@suggest_params.register
-def _(estimator: SkDnn, trial):
-    h1 = trial.suggest_categorical('hidden_1', [512, 1024, 1512, 2048, 4096])
-    T0 = trial.suggest_int('T0', 10, 100)
-    params = {
-        'hidden_1': h1,
-        'hidden_2': trial.suggest_int('hidden_2', 32, 512),
-        'dropout_1': trial.suggest_float('dropout_1', 0.3, 0.7),
-        'dropout_2': trial.suggest_float('dropout_2', 0.0, 0.2),
-        'activation': trial.suggest_categorical('activation', ['relu', 'leaky_relu', 'gelu', 'swish']),
-        'lr': trial.suggest_float('lr', 1e-4, 1e-3),
-        'T0': T0,
-        'annealing_rounds': trial.suggest_int('annealing_rounds', 2, 5),
-        'swa_epochs': trial.suggest_int('swa_epochs', 5, T0),
-        'var_p': trial.suggest_float('var_p', 0.9, 1.0)
-    }
-    return params
-"""
 
 
 @suggest_params.register
