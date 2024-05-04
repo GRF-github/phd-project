@@ -1,0 +1,132 @@
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/utils/extmath.py:1051: RuntimeWarning: invalid value encountered in divide
+  updated_mean = (last_sum + new_sum) / updated_sample_count
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/utils/extmath.py:1056: RuntimeWarning: invalid value encountered in divide
+  T = new_sum / new_sample_count
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/utils/extmath.py:1076: RuntimeWarning: invalid value encountered in divide
+  new_unnormalized_variance -= correction**2 / new_sample_count
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/impute/_base.py:555: UserWarning: Skipping features without any observed values: [161]. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/impute/_base.py:555: UserWarning: Skipping features without any observed values: [161]. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+Creating blender
+Param search
+[I 2024-02-20 18:20:37,901] A new study created in RDB with name: cv-fold-0-full_mlp
+Starting 1 trials
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/preprocessing/_data.py:2667: UserWarning: n_quantiles (1000) is greater than the total number of samples (400). n_quantiles is set to n_samples.
+  warnings.warn(
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/preprocessing/_data.py:2667: UserWarning: n_quantiles (1000) is greater than the total number of samples (400). n_quantiles is set to n_samples.
+  warnings.warn(
+[I 2024-02-20 18:20:46,462] Trial 0 finished with value: -4.991573333740234 and parameters: {'hidden_1': 512, 'T0': 59, 'hidden_2': 409, 'dropout_1': 0.5021686945769194, 'dropout_2': 0.05488512165591615, 'activation': 'gelu', 'lr': 0.0005721188525939737, 'annealing_rounds': 5, 'swa_epochs': 21, 'var_p': 0.9402497853727901}. Best is trial 0 with value: -4.991573333740234.
+[I 2024-02-20 18:20:46,492] A new study created in RDB with name: cv-fold-0-desc_mlp
+Starting 1 trials
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/preprocessing/_data.py:2667: UserWarning: n_quantiles (1000) is greater than the total number of samples (400). n_quantiles is set to n_samples.
+  warnings.warn(
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/preprocessing/_data.py:2667: UserWarning: n_quantiles (1000) is greater than the total number of samples (400). n_quantiles is set to n_samples.
+  warnings.warn(
+[I 2024-02-20 18:20:56,777] Trial 0 finished with value: -5.167144775390625 and parameters: {'hidden_1': 2048, 'T0': 88, 'hidden_2': 364, 'dropout_1': 0.4871367071138511, 'dropout_2': 0.10220857187867655, 'activation': 'gelu', 'lr': 0.0005821817170965849, 'annealing_rounds': 5, 'swa_epochs': 39, 'var_p': 0.9875710750332293}. Best is trial 0 with value: -5.167144775390625.
+[I 2024-02-20 18:20:56,803] A new study created in RDB with name: cv-fold-0-fgp_mlp
+Starting 1 trials
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/preprocessing/_data.py:2667: UserWarning: n_quantiles (1000) is greater than the total number of samples (400). n_quantiles is set to n_samples.
+  warnings.warn(
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/preprocessing/_data.py:2667: UserWarning: n_quantiles (1000) is greater than the total number of samples (400). n_quantiles is set to n_samples.
+  warnings.warn(
+[I 2024-02-20 18:20:58,195] Trial 0 finished with value: -7.272552490234375 and parameters: {'hidden_1': 512, 'T0': 13, 'hidden_2': 152, 'dropout_1': 0.45743164379412526, 'dropout_2': 0.035820097908532626, 'activation': 'relu', 'lr': 0.0005089812629201222, 'annealing_rounds': 4, 'swa_epochs': 10, 'var_p': 0.9170707285805966}. Best is trial 0 with value: -7.272552490234375.
+[I 2024-02-20 18:20:58,219] A new study created in RDB with name: cv-fold-0-full_xgb
+Starting 1 trials
+/home/grf/PycharmProjects/cmmrt/train/param_search.py:50: FutureWarning: suggest_loguniform has been deprecated in v3.0.0. This feature will be removed in v6.0.0. See https://github.com/optuna/optuna/releases/tag/v3.0.0. Use suggest_float(..., log=True) instead.
+  'min_child_weight': trial.suggest_loguniform('min_child_weight', 0.001, 10),
+/home/grf/anaconda3/lib/python3.11/site-packages/xgboost-2.0.2-py3.11-linux-x86_64.egg/xgboost/core.py:160: UserWarning: [18:20:58] WARNING: /workspace/src/learner.cc:742:
+Parameters: { "colsample_bylevel", "colsample_bynode", "colsample_bytree", "gamma", "max_depth", "min_child_weight", "subsample", "tree_method" } are not used.
+
+  warnings.warn(smsg, UserWarning)
+/home/grf/anaconda3/lib/python3.11/site-packages/xgboost-2.0.2-py3.11-linux-x86_64.egg/xgboost/core.py:160: UserWarning: [18:20:59] WARNING: /workspace/src/learner.cc:742:
+Parameters: { "colsample_bylevel", "colsample_bynode", "colsample_bytree", "gamma", "max_depth", "min_child_weight", "subsample", "tree_method" } are not used.
+
+  warnings.warn(smsg, UserWarning)
+[I 2024-02-20 18:21:00,668] Trial 0 finished with value: -7.6110382080078125 and parameters: {'n_estimators': 867, 'max_depth': 6, 'learning_rate': 0.13283228522622859, 'booster': 'gblinear', 'gamma': 0.09878744161061315, 'min_child_weight': 0.014548186624732631, 'subsample': 0.9253562228358193, 'reg_alpha': 2.620986565392756, 'reg_lambda': 1.6495972257298364, 'colsample_bytree': 0.6866777311078562, 'colsample_bylevel': 0.9667457469180549, 'colsample_bynode': 0.44103137176716123, 'tree_method': 'hist', 'var_p': 0.9947874310468059}. Best is trial 0 with value: -7.6110382080078125.
+[I 2024-02-20 18:21:00,693] A new study created in RDB with name: cv-fold-0-desc_xgb
+Starting 1 trials
+/home/grf/PycharmProjects/cmmrt/train/param_search.py:50: FutureWarning: suggest_loguniform has been deprecated in v3.0.0. This feature will be removed in v6.0.0. See https://github.com/optuna/optuna/releases/tag/v3.0.0. Use suggest_float(..., log=True) instead.
+  'min_child_weight': trial.suggest_loguniform('min_child_weight', 0.001, 10),
+/home/grf/anaconda3/lib/python3.11/site-packages/xgboost-2.0.2-py3.11-linux-x86_64.egg/xgboost/core.py:160: UserWarning: [18:21:00] WARNING: /workspace/src/learner.cc:742:
+Parameters: { "colsample_bylevel", "colsample_bynode", "colsample_bytree", "gamma", "max_depth", "min_child_weight", "subsample", "tree_method" } are not used.
+
+  warnings.warn(smsg, UserWarning)
+/home/grf/anaconda3/lib/python3.11/site-packages/xgboost-2.0.2-py3.11-linux-x86_64.egg/xgboost/core.py:160: UserWarning: [18:21:01] WARNING: /workspace/src/learner.cc:742:
+Parameters: { "colsample_bylevel", "colsample_bynode", "colsample_bytree", "gamma", "max_depth", "min_child_weight", "subsample", "tree_method" } are not used.
+
+  warnings.warn(smsg, UserWarning)
+[I 2024-02-20 18:21:01,640] Trial 0 finished with value: -8.361015319824219 and parameters: {'n_estimators': 688, 'max_depth': 29, 'learning_rate': 0.07891329886055172, 'booster': 'gblinear', 'gamma': 0.1857377007783101, 'min_child_weight': 0.37790098820390905, 'subsample': 0.9984136594744439, 'reg_alpha': 3.7966864676878442, 'reg_lambda': 1.513530260355559, 'colsample_bytree': 0.5560515291705302, 'colsample_bylevel': 0.7027701264220048, 'colsample_bynode': 0.5140427843486144, 'tree_method': 'approx', 'var_p': 0.9424117028727964}. Best is trial 0 with value: -8.361015319824219.
+[I 2024-02-20 18:21:01,666] A new study created in RDB with name: cv-fold-0-fgp_xgb
+Starting 1 trials
+/home/grf/PycharmProjects/cmmrt/train/param_search.py:50: FutureWarning: suggest_loguniform has been deprecated in v3.0.0. This feature will be removed in v6.0.0. See https://github.com/optuna/optuna/releases/tag/v3.0.0. Use suggest_float(..., log=True) instead.
+  'min_child_weight': trial.suggest_loguniform('min_child_weight', 0.001, 10),
+/home/grf/anaconda3/lib/python3.11/site-packages/xgboost-2.0.2-py3.11-linux-x86_64.egg/xgboost/core.py:160: UserWarning: [18:21:01] WARNING: /workspace/src/learner.cc:742:
+Parameters: { "colsample_bylevel", "colsample_bynode", "colsample_bytree", "gamma", "max_depth", "min_child_weight", "subsample", "tree_method" } are not used.
+
+  warnings.warn(smsg, UserWarning)
+/home/grf/anaconda3/lib/python3.11/site-packages/xgboost-2.0.2-py3.11-linux-x86_64.egg/xgboost/core.py:160: UserWarning: [18:21:02] WARNING: /workspace/src/learner.cc:742:
+Parameters: { "colsample_bylevel", "colsample_bynode", "colsample_bytree", "gamma", "max_depth", "min_child_weight", "subsample", "tree_method" } are not used.
+
+  warnings.warn(smsg, UserWarning)
+[I 2024-02-20 18:21:02,986] Trial 0 finished with value: -9.078609466552734 and parameters: {'n_estimators': 646, 'max_depth': 5, 'learning_rate': 0.1049701672780792, 'booster': 'gblinear', 'gamma': 0.42578864186680443, 'min_child_weight': 0.24389037040619344, 'subsample': 0.5202210456820888, 'reg_alpha': 0.09883718583639012, 'reg_lambda': 1.200345938707574, 'colsample_bytree': 0.871874020813947, 'colsample_bylevel': 0.8489545767269464, 'colsample_bynode': 0.9938997407328704, 'tree_method': 'approx', 'var_p': 0.9618189863719765}. Best is trial 0 with value: -9.078609466552734.
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/preprocessing/_data.py:2667: UserWarning: n_quantiles (1000) is greater than the total number of samples (800). n_quantiles is set to n_samples.
+  warnings.warn(
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/preprocessing/_data.py:2667: UserWarning: n_quantiles (1000) is greater than the total number of samples (800). n_quantiles is set to n_samples.
+  warnings.warn(
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/preprocessing/_data.py:2667: UserWarning: n_quantiles (1000) is greater than the total number of samples (800). n_quantiles is set to n_samples.
+  warnings.warn(
+/home/grf/anaconda3/lib/python3.11/site-packages/xgboost-2.0.2-py3.11-linux-x86_64.egg/xgboost/core.py:160: UserWarning: [18:21:23] WARNING: /workspace/src/learner.cc:742:
+Parameters: { "colsample_bylevel", "colsample_bynode", "colsample_bytree", "gamma", "max_depth", "min_child_weight", "subsample", "tree_method" } are not used.
+
+  warnings.warn(smsg, UserWarning)
+/home/grf/anaconda3/lib/python3.11/site-packages/xgboost-2.0.2-py3.11-linux-x86_64.egg/xgboost/core.py:160: UserWarning: [18:21:25] WARNING: /workspace/src/learner.cc:742:
+Parameters: { "colsample_bylevel", "colsample_bynode", "colsample_bytree", "gamma", "max_depth", "min_child_weight", "subsample", "tree_method" } are not used.
+
+  warnings.warn(smsg, UserWarning)
+/home/grf/anaconda3/lib/python3.11/site-packages/xgboost-2.0.2-py3.11-linux-x86_64.egg/xgboost/core.py:160: UserWarning: [18:21:26] WARNING: /workspace/src/learner.cc:742:
+Parameters: { "colsample_bylevel", "colsample_bynode", "colsample_bytree", "gamma", "max_depth", "min_child_weight", "subsample", "tree_method" } are not used.
+
+  warnings.warn(smsg, UserWarning)
+[I 2024-02-20 18:21:27,264] A new study created in RDB with name: cv-fold-0-rf_final_est
+Starting 1 trials
+[I 2024-02-20 18:21:27,999] Trial 0 finished with value: -13.453165151694407 and parameters: {'n_estimators': 485, 'max_depth': 10, 'min_samples_split': 62, 'min_samples_leaf': 224, 'max_features': 'log2'}. Best is trial 0 with value: -13.453165151694407.
+Training
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/preprocessing/_data.py:2667: UserWarning: n_quantiles (1000) is greater than the total number of samples (800). n_quantiles is set to n_samples.
+  warnings.warn(
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/preprocessing/_data.py:2667: UserWarning: n_quantiles (1000) is greater than the total number of samples (800). n_quantiles is set to n_samples.
+  warnings.warn(
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/preprocessing/_data.py:2667: UserWarning: n_quantiles (1000) is greater than the total number of samples (800). n_quantiles is set to n_samples.
+  warnings.warn(
+/home/grf/anaconda3/lib/python3.11/site-packages/xgboost-2.0.2-py3.11-linux-x86_64.egg/xgboost/core.py:160: UserWarning: [18:21:49] WARNING: /workspace/src/learner.cc:742:
+Parameters: { "colsample_bylevel", "colsample_bynode", "colsample_bytree", "gamma", "max_depth", "min_child_weight", "subsample", "tree_method" } are not used.
+
+  warnings.warn(smsg, UserWarning)
+/home/grf/anaconda3/lib/python3.11/site-packages/xgboost-2.0.2-py3.11-linux-x86_64.egg/xgboost/core.py:160: UserWarning: [18:21:51] WARNING: /workspace/src/learner.cc:742:
+Parameters: { "colsample_bylevel", "colsample_bynode", "colsample_bytree", "gamma", "max_depth", "min_child_weight", "subsample", "tree_method" } are not used.
+
+  warnings.warn(smsg, UserWarning)
+/home/grf/anaconda3/lib/python3.11/site-packages/xgboost-2.0.2-py3.11-linux-x86_64.egg/xgboost/core.py:160: UserWarning: [18:21:51] WARNING: /workspace/src/learner.cc:742:
+Parameters: { "colsample_bylevel", "colsample_bynode", "colsample_bytree", "gamma", "max_depth", "min_child_weight", "subsample", "tree_method" } are not used.
+
+  warnings.warn(smsg, UserWarning)
+/home/grf/anaconda3/lib/python3.11/site-packages/xgboost-2.0.2-py3.11-linux-x86_64.egg/xgboost/core.py:160: UserWarning: [18:22:19] WARNING: /workspace/src/learner.cc:742:
+Parameters: { "colsample_bylevel", "colsample_bynode", "colsample_bytree", "gamma", "max_depth", "min_child_weight", "subsample", "tree_method" } are not used.
+
+  warnings.warn(smsg, UserWarning)
+/home/grf/anaconda3/lib/python3.11/site-packages/xgboost-2.0.2-py3.11-linux-x86_64.egg/xgboost/core.py:160: UserWarning: [18:22:22] WARNING: /workspace/src/learner.cc:742:
+Parameters: { "colsample_bylevel", "colsample_bynode", "colsample_bytree", "gamma", "max_depth", "min_child_weight", "subsample", "tree_method" } are not used.
+
+  warnings.warn(smsg, UserWarning)
+/home/grf/anaconda3/lib/python3.11/site-packages/xgboost-2.0.2-py3.11-linux-x86_64.egg/xgboost/core.py:160: UserWarning: [18:22:22] WARNING: /workspace/src/learner.cc:742:
+Parameters: { "colsample_bylevel", "colsample_bynode", "colsample_bytree", "gamma", "max_depth", "min_child_weight", "subsample", "tree_method" } are not used.
+
+  warnings.warn(smsg, UserWarning)
+Saving preprocessor and BLENDEr
+/home/grf/anaconda3/lib/python3.11/site-packages/sklearn/impute/_base.py:555: UserWarning: Skipping features without any observed values: [161]. At least one non-missing value is needed for imputation with strategy='median'.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/home/grf/PycharmProjects/cmmrt/main.py", line 92, in <module>
+    evaluate_all_estimators(blender, test_split_X, test_split_y, metrics, fold)
+                                                                 ^^^^^^^
+NameError: name 'metrics' is not defined
