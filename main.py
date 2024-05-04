@@ -10,7 +10,9 @@ from utils.evaluation import evaluate_model
 from utils.stratification import stratify_y
 
 # Parameters
-is_smoke_test = False
+is_smoke_test = True
+is_metlin = False
+is_allccs2 = True
 ################
 
 if is_smoke_test:
@@ -29,7 +31,14 @@ else:
 if __name__ == "__main__":
     # Load data
     print("Loading data")
-    X, y, desc_cols, fgp_cols = get_my_data(common_cols=['unique_id', 'correct_ccs_avg'], is_smoke_test=is_smoke_test)
+    if is_metlin:
+        common_cols = ['unique_id', 'correct_ccs_avg']
+    elif is_allccs2:
+        common_cols = ['unique_id', 'CCS']
+    else:
+        raise ValueError("You need to choose a dataset, either metlin or allccs2")
+
+    X, y, desc_cols, fgp_cols = get_my_data(common_cols=common_cols, is_smoke_test=is_smoke_test)
 
     BlenderConfig = namedtuple('BlenderConfig', ['train_size', 'n_strats', 'random_state'])
     blender_config = BlenderConfig(train_size=0.8, n_strats=8, random_state=3674)

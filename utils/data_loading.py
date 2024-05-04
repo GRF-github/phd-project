@@ -3,7 +3,7 @@ import os
 import pickle
 import numpy as np
 import pandas as pd
-from utils.cure_descriptors_and_fingerprints import cure
+from utils.cure_descriptors_and_fingerprints import cure_metlin, cure_allccs2
 
 
 def get_my_data(common_cols, is_smoke_test):
@@ -52,12 +52,20 @@ def get_my_data(common_cols, is_smoke_test):
         with bz2.BZ2File("./resources/descriptors_and_fingerprints.pklz", "rb") as f:
             X, y, desc_cols, fgp_cols = pickle.load(f)
     else:
-        # Load the original files created with Alvadesk
-        raw_descriptors = pd.read_csv("./resources/metlin_descriptors_raw.csv")
-        raw_fingerprints = pd.read_csv("./resources/metlin_fingerprints_raw.csv")
+        if common_cols == ['unique_id', 'correct_ccs_avg']:
+            # Load the original files created with Alvadesk
+            raw_descriptors = pd.read_csv("./resources/metlin_descriptors_raw.csv")
+            raw_fingerprints = pd.read_csv("./resources/metlin_fingerprints_raw.csv")
 
-        # Remove bloat columns and add a number for identification and the correct ccs
-        descriptors, fingerprints = cure(raw_descriptors, raw_fingerprints)
+            # Remove bloat columns and add a number for identification and the correct ccs
+            descriptors, fingerprints = cure_metlin(raw_descriptors, raw_fingerprints)
+        elif common_cols == ['unique_id', 'CCS']:
+            # Load the original files created with Alvadesk
+            raw_descriptors = pd.read_csv("./resources/AllCCS2_experimental_descriptors_raw.csv")
+            raw_fingerprints = pd.read_csv("./resources/AllCCS2_experimental_fingerprints_raw.csv")
+
+            # Remove bloat columns and add a number for identification and the correct ccs
+            descriptors, fingerprints = cure_allccs2(raw_descriptors, raw_fingerprints)
 
         # Create the file that will be used for training
         print('Merging')
