@@ -10,7 +10,7 @@ from utils.evaluation import evaluate_model
 from utils.stratification import stratify_y
 
 # Parameters
-is_smoke_test = True
+is_smoke_test = False
 is_metlin = False
 is_allccs2 = True
 ################
@@ -32,9 +32,9 @@ if __name__ == "__main__":
     # Load data
     print("Loading data")
     if is_metlin:
-        common_cols = ['unique_id', 'correct_ccs_avg']
+        common_cols = ['index', 'correct_ccs_avg']
     elif is_allccs2:
-        common_cols = ['unique_id', 'CCS']
+        common_cols = ['index', 'CCS']
     else:
         raise ValueError("You need to choose a dataset, either metlin or allccs2")
 

@@ -20,7 +20,6 @@ def get_my_data(common_cols, is_smoke_test):
             - desc_cols (numpy.ndarray): Indices of columns corresponding to descriptors in the merged dataset.
             - fgp_cols (numpy.ndarray): Indices of columns corresponding to fingerprints in the merged dataset.
     """
-
     # If we are running a smoke test and we've already created the complete dataset then:
     if is_smoke_test and os.path.exists("./resources/descriptors_and_fingerprints.pklz"):
         # If we have created the "smoke dataset", load it
@@ -52,14 +51,14 @@ def get_my_data(common_cols, is_smoke_test):
         with bz2.BZ2File("./resources/descriptors_and_fingerprints.pklz", "rb") as f:
             X, y, desc_cols, fgp_cols = pickle.load(f)
     else:
-        if common_cols == ['unique_id', 'correct_ccs_avg']:
+        if common_cols == ['index', 'correct_ccs_avg']:
             # Load the original files created with Alvadesk
             raw_descriptors = pd.read_csv("./resources/metlin_descriptors_raw.csv")
             raw_fingerprints = pd.read_csv("./resources/metlin_fingerprints_raw.csv")
 
             # Remove bloat columns and add a number for identification and the correct ccs
             descriptors, fingerprints = cure_metlin(raw_descriptors, raw_fingerprints)
-        elif common_cols == ['unique_id', 'CCS']:
+        elif common_cols == ['index', 'CCS']:
             # Load the original files created with Alvadesk
             raw_descriptors = pd.read_csv("./resources/AllCCS2_experimental_descriptors_raw.csv")
             raw_fingerprints = pd.read_csv("./resources/AllCCS2_experimental_fingerprints_raw.csv")
@@ -69,14 +68,13 @@ def get_my_data(common_cols, is_smoke_test):
 
         # Create the file that will be used for training
         print('Merging')
-        descriptors = descriptors.drop_duplicates()
         descriptors_and_fingerprints = pd.merge(descriptors, fingerprints, on=common_cols)
 
         X_desc = descriptors_and_fingerprints[descriptors.drop(common_cols, axis=1).columns].values
         X_fgp = descriptors_and_fingerprints[fingerprints.drop(common_cols, axis=1).columns].values
 
         X = np.concatenate([X_desc, X_fgp], axis=1)
-        y = descriptors_and_fingerprints['correct_ccs_avg'].values.flatten()
+        y = descriptors_and_fingerprints[common_cols[1]].values.flatten()
         desc_cols = np.arange(X_desc.shape[1], dtype='int')
         fgp_cols = np.arange(X_desc.shape[1], X.shape[1], dtype='int')
 

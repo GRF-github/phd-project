@@ -36,23 +36,15 @@ def cure_metlin(descriptors, fingerprints):
     fingerprints['correct_ccs_avg'] = fingerprints.apply(calculate_average_ccs, axis=1)
     descriptors['correct_ccs_avg'] = descriptors.apply(calculate_average_ccs, axis=1)
 
-    fingerprints['unique_id'] = range(len(fingerprints['correct_ccs_avg']))
-    descriptors['unique_id'] = range(len(descriptors['correct_ccs_avg']))
+    # Identify each compound with a unique number
+    fingerprints.reset_index(inplace=True)
+    descriptors.reset_index(inplace=True)
 
     # Use pandas.get_dummies() to create binary columns
     adduct_dummies = pandas.get_dummies(fingerprints['Adduct'])
 
-    # Rename the columns to match the specified conditions
-    adduct_dummies.columns = ['[M+H]', '[M-H]', '[M+Na]']
-
     # Concatenate the original DataFrame with the new binary columns
     fingerprints = pandas.concat([fingerprints, adduct_dummies], axis=1)
-
-    # Fill NaN values with 0 (for cases where the original 'Adduct' didn't match any condition)
-    fingerprints = fingerprints.fillna(0)
-
-    # Add adduct vector columns to the end of fingerprint columns
-    #fingerprints[['[M+H]', '[M-H]', '[M+Na]']] = fingerprints[['[M+H]', '[M-H]', '[M+Na]']]
 
     # Remove bloat columns
     columns_to_drop = ['Molecule Name', 'Molecular Formula', 'Precursor Adduct', 'CCS1', 'CCS2', 'CCS3', 'CCS_AVG',
@@ -64,42 +56,35 @@ def cure_metlin(descriptors, fingerprints):
     return descriptors, fingerprints
 
 
-
-import pandas
-
-
 def cure_allccs2(descriptors, fingerprints):
-    # Drop NaNs
-    fingerprints.dropna(subset=['InChI'], inplace=True)
+    # Parameters:
+    keep_only_same_adducts_as_in_Metlin = True
 
-    descriptors.dropna(subset=['InChI'], inplace=True)
+    # Remove any compound without InChI or Adduct
+    fingerprints.dropna(subset=['InChI', 'Adduct'], inplace=True)
+    descriptors.dropna(subset=['InChI', 'Adduct'], inplace=True)
 
-    # Remove non-used columns
-    columns_to_drop = ['AllCCS ID', 'Name', 'Structure', 'Formula', 'Type', 'm/z', 'Confidence level',
-                               'Update date', 'InChI']
-    fingerprints.drop(columns=columns_to_drop, inplace=True)
-    descriptors.drop(columns=columns_to_drop, inplace=True)
+    # Filter the dataframe in we only want to have the same adduct as in Metlin
+    if keep_only_same_adducts_as_in_Metlin:
+        desired_adducts = ['[M+H]+', '[M-H]-', '[M+Na]+']
+        mask_of_desired_adducts = fingerprints['Adduct'].isin(desired_adducts)
+        rows_to_drop = fingerprints[~mask_of_desired_adducts].index
+        fingerprints.drop(rows_to_drop, inplace=True)
+        descriptors.drop(rows_to_drop, inplace=True)
 
     # Identify each compound with a unique number
-    fingerprints['unique_id'] = range(len(fingerprints['CCS']))
-    descriptors['unique_id'] = range(len(descriptors['CCS']))
+    fingerprints.reset_index(inplace=True)
+    descriptors.reset_index(inplace=True)
 
-    # Use pandas.get_dummies() to create binary columns
+    # Create the one-hot encoding columns from the column 'Adduct' and concatenate them with the rest of the dataframe
     adduct_dummies = pandas.get_dummies(fingerprints['Adduct'])
-
-    # Rename the columns to match the specified conditions
-    adduct_dummies.columns = fingerprints['Adduct'].unique()
-
-    # Concatenate the original DataFrame with the new binary columns
     fingerprints = pandas.concat([fingerprints, adduct_dummies], axis=1)
 
-    # Fill NaN values with 0 (for cases where the original 'Adduct' didn't match any condition)
-    fingerprints = fingerprints.fillna(0)
-
-    # Add adduct vector columns to the end of fingerprint columns
-    # fingerprints[['[M+H]', '[M-H]', '[M+Na]']] = fingerprints[['[M+H]', '[M-H]', '[M+Na]']]
-
-    print(fingerprints.columns)
+    # Remove non-used columns
+    columns_to_drop = ['AllCCS ID', 'Name', 'Structure', 'Formula', 'Type', 'm/z', 'Confidence level', 'Update date',
+                       'InChI', 'Adduct']
+    fingerprints.drop(columns=columns_to_drop, inplace=True)
+    descriptors.drop(columns=columns_to_drop, inplace=True)
 
     # Return cured descriptors and cured fingerprints
     return descriptors, fingerprints
