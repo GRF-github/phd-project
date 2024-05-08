@@ -11,8 +11,8 @@ from utils.stratification import stratify_y
 
 # Parameters
 is_smoke_test = False
-is_metlin = False
-is_allccs2 = True
+is_metlin = True
+is_allccs2 = False
 ################
 
 if is_smoke_test:
