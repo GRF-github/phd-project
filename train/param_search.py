@@ -145,7 +145,7 @@ def _(estimator: Blender, X, y, cv, study, n_trials, keep_going=False):
 def create_study(model_name, study_prefix, storage):
     return optuna.create_study(
         study_name=f'{study_prefix}-{model_name}',
-        direction='minimize' if model_name == 'lgb' else 'maximize',
+        direction='maximize',
         storage=storage,
         load_if_exists=True,
         pruner=optuna.pruners.MedianPruner()
