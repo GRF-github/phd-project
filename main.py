@@ -24,7 +24,7 @@ if is_smoke_test:
 else:
     number_of_folds = 5
     number_of_trials = 100
-    param_search_folds = 1
+    param_search_folds = 5
     database = "sqlite:///./results/cv_short.db"
 
 
