@@ -19,4 +19,4 @@ def evaluate_model(blender, preprocessor, test_split_X, test_split_y, fold):
 
     # Save all intermediate results
     results.to_csv(f"./results/evaluation_results.txt", index=False, mode='a', header=False)
-    print(f"Evaluation results have been saved into ./results/evaluation_results.txt")
+    print(f"Evaluation results have been saved into ./results/evaluation_results_short.txt")

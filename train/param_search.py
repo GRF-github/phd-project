@@ -19,7 +19,7 @@ from train.loss import truncated_medae_scorer
 def suggest_params(estimator, trial):
     raise NotImplementedError
 
-
+"""
 @suggest_params.register
 def _(estimator: SkDnn, trial):
     max_number_of_epochs = trial.suggest_int('max_number_of_epochs', 10, 100)
@@ -34,6 +34,24 @@ def _(estimator: SkDnn, trial):
         'swa_epochs': trial.suggest_int('swa_epochs', 5, max_number_of_epochs),
         'var_p': trial.suggest_float('var_p', 0.9, 1.0),
         'batch_size': trial.suggest_categorical('batch_size', [8, 16, 32, 64])
+    }
+    return params
+"""
+
+@suggest_params.register
+def _(estimator: SkDnn, trial):
+    max_number_of_epochs = trial.suggest_int('max_number_of_epochs', 2, 2)
+    params = {
+        'number_of_hidden_layers': trial.suggest_int('number_of_hidden_layers', 2, 2),
+        'dropout_between_layers': trial.suggest_float('dropout_between_layers', 0, 0.5),
+        'number_of_neurons_per_layer': trial.suggest_categorical('number_of_neurons_per_layer', [512, 1024, 2048, 4096]),
+        'max_number_of_epochs': max_number_of_epochs,
+        'activation': trial.suggest_categorical('activation', ['swish']),
+        'lr': trial.suggest_float('lr', 10**(-5), 10**(-2), log=True),
+        'annealing_rounds': trial.suggest_int('annealing_rounds', 1, 1),
+        'swa_epochs': trial.suggest_int('swa_epochs', 1, max_number_of_epochs),
+        'var_p': trial.suggest_float('var_p', 1.0, 1.0),
+        'batch_size': trial.suggest_categorical('batch_size', [16])
     }
     return params
 
