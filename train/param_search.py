@@ -49,7 +49,7 @@ def _(estimator: SkDnn, trial):
         'activation': trial.suggest_categorical('activation', ['swish']),
         'lr': trial.suggest_float('lr', 10**(-5), 10**(-2), log=True),
         'annealing_rounds': trial.suggest_int('annealing_rounds', 1, 1),
-        'swa_epochs': trial.suggest_int('swa_epochs', 1, max_number_of_epochs),
+        'swa_epochs': trial.suggest_int('swa_epochs', 1, 1),
         'var_p': trial.suggest_float('var_p', 1.0, 1.0),
         'batch_size': trial.suggest_categorical('batch_size', [16])
     }
