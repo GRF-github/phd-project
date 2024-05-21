@@ -1,21 +1,24 @@
 import optuna
+import pandas as pd
+
 
 for i in range(0, 5):
-    study = optuna.create_study(
-        study_name=f"cv-fold-{i}-fgp_mlp",
-        direction='maximize',
-        storage="sqlite:////home/guillermo/PycharmProjects/cmmrt/results/IWWBIO_results/cv.db",
-        load_if_exists=True,
-        pruner=optuna.pruners.MedianPruner()
-    )
+    for j in ["fgp_mlp", "desc_mlp", "full_mlp"]:
 
-    trials = study.trials
+        study = optuna.create_study(
+            study_name=f"cv-fold-{i}-{j}",
+            direction='maximize',
+            storage="sqlite:////home/guillermo/PycharmProjects/cmmrt/results/IWWBIO_results/cv.db",
+            load_if_exists=True,
+            pruner=optuna.pruners.MedianPruner()
+        )
 
-    params_list = []
-    for trial in trials:
-        params = trial.params
-        params["score"] = trial.values[0]
-        params_list.append(params)
+        trials = study.trials
 
-    import pandas as pd
-    pd.DataFrame(params_list).to_csv(f"/home/guillermo/PycharmProjects/cmmrt/results/test{i}.csv")
+        params_list = []
+        for trial in trials:
+            params = trial.params
+            params["score"] = trial.values[0]
+            params_list.append(params)
+
+        pd.DataFrame(params_list).to_csv(f"/home/guillermo/PycharmProjects/cmmrt/results/fold{i}_{j}.csv")
