@@ -1,7 +1,7 @@
 import optuna
 import pandas as pd
 
-
+params_list = []
 for i in range(0, 5):
     for j in ["fgp_mlp", "desc_mlp", "full_mlp"]:
 
@@ -15,10 +15,16 @@ for i in range(0, 5):
 
         trials = study.trials
 
-        params_list = []
+        params = {}
+        params['fold'] = i
+        params['feature'] = j
+
         for trial in trials:
-            params = trial.params
-            params["score"] = trial.values[0]
+            params.update(trial.params)
+
+            if trial.values is not None:
+                params["score"] = trial.values[0]
+
             params_list.append(params)
 
-        pd.DataFrame(params_list).to_csv(f"/home/guillermo/PycharmProjects/cmmrt/results/fold{i}_{j}.csv")
+pd.DataFrame(params_list).to_csv(f"/home/guillermo/PycharmProjects/cmmrt/results/parms.csv")
