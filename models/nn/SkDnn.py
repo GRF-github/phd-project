@@ -21,7 +21,7 @@ class _DnnModel(nn.Module):
         layers = [nn.Linear(n_features, number_of_neurons_per_layer)]
         nn.init.zeros_(layers[0].bias)
         # Intermediate hidden layers
-        for _ in range(1, number_of_hidden_layers):
+        for _ in range(1, number_of_hidden_layers+1):
             layer = nn.Linear(number_of_neurons_per_layer, number_of_neurons_per_layer)
             nn.init.zeros_(layer.bias)
             layers.append(layer)
