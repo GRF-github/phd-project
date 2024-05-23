@@ -21,7 +21,7 @@ def evaluate_model(blender, preprocessor, test_split_X, test_split_y, fold):
         pred_vs_exp_df = pd.DataFrame()
         pred_vs_exp_df['test_split_y'] = test_split_y
         pred_vs_exp_df['predicted_values'] = estimator.predict(X_test)
-        pred_vs_exp_df.to_csv(f"./results/pred_vs_exp{estimator_name}.txt", index=False, mode='a', header=False)
+        pred_vs_exp_df.to_csv(f"./results/pred_vs_exp_{estimator_name}.txt", index=False, mode='a', header=False)
 
     results = pd.DataFrame(iteration_results)
 

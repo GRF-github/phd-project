@@ -40,6 +40,8 @@ if __name__ == "__main__":
 
     X, y, desc_cols, fgp_cols = get_my_data(common_cols=common_cols, is_smoke_test=is_smoke_test)
 
+    print(len(y))
+
     BlenderConfig = namedtuple('BlenderConfig', ['train_size', 'n_strats', 'random_state'])
     blender_config = BlenderConfig(train_size=0.8, n_strats=8, random_state=3674)
 
