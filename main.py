@@ -10,7 +10,7 @@ from utils.evaluation import evaluate_model
 from utils.stratification import stratify_y
 
 # Parameters
-is_smoke_test = True
+is_smoke_test = False
 is_metlin = True
 is_allccs2 = False
 ################
