@@ -1,13 +1,22 @@
 import pandas as pd
+import os
+import matplotlib.pyplot as plt
 
-# Define the file path
-file_path = ''
+data_files_list = os.listdir('/home/grf/PycharmProjects/cmmrt/results/scatter_plots')
 
-# Read the CSV file into a DataFrame
-df = pd.read_csv('/home/grf/PycharmProjects/cmmrt/results/prueba_scatter.csv', header=None)
+for file in data_files_list:
+    # Read the CSV file into a DataFrame
+    df = pd.read_csv(f'/home/grf/PycharmProjects/cmmrt/results/scatter_plots/{file}', header=None)
 
-# Rename the columns
-df.columns = ['exp', 'pred']
+    # Rename the columns
+    df.columns = ['exp', 'pred']
 
-# Display the DataFrame
-print(df.head())
+    # Create a scatter plot
+    plt.figure()
+    plt.scatter(df['exp'], df['pred'], s=2, c='blue', label='Data points')
+    plt.xlabel('exp')
+    plt.ylabel('pred')
+    plt.title(f'Scatter Plot of {file[12:-4]}')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
