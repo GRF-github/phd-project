@@ -17,7 +17,7 @@ for file in data_files_list:
     pred_vs_exp_df = pd.read_csv(f'/home/grf/PycharmProjects/cmmrt/results/scatter_plots/{file}', header=None)
 
     # Rename the columns
-    pred_vs_exp_df.columns = ['exp', 'pred']
+    pred_vs_exp_df.columns = ['index', 'exp', 'pred']
 
     # Create a scatter plot
     plt.figure()
@@ -39,30 +39,25 @@ for file in data_files_list:
 # SECOND PART: identify each prediction
 # Open metlin_fingerprints_raw.csv
 fingerprints_df = pd.read_csv('/home/grf/PycharmProjects/cmmrt/resources/metlin_data/metlin_fingerprints_raw.csv')
-# Correct CCS value
-def calculate_average_ccs(row):
-    """
-    Calculate the average Collision Cross Section (CCS) value from three different experiments.
+fingerprints_df.dropna(subset=['Molecule Name'], inplace=True)
+fingerprints_df.drop(fingerprints_df[fingerprints_df['Molecule Name'].str.contains("Tm_")].index, inplace=True)
+fingerprints_df.reset_index(drop=True, inplace=True)
 
-    Parameters:
-    - row (pandas.Series): A row from a DataFrame containing columns 'CCS1', 'CCS2', and 'CCS3' with CCS values.
+# Keep only the 'Adduct' and 'InChIKEY' columns
+fingerprints_df = fingerprints_df[['Adduct', 'InChIKEY']]
 
-    Returns:
-    - float: The average CCS value rounded to two decimal places.
-    """
+# Keep only the first 14 characters of 'InChIKEY'
+fingerprints_df['InChIKEY'] = fingerprints_df['InChIKEY'].str.slice(0, 14)
 
-    # Extract values from columns CCS1, CCS2, CCS3 for the current row
-    ccs1 = row['CCS1']
-    ccs2 = row['CCS2']
-    ccs3 = row['CCS3']
+# TODO: Temporary smoke test
+fingerprints_df = fingerprints_df[:1500]
 
-    # Calculate the average and round to two decimals
-    average_ccs = round((ccs1 + ccs2 + ccs3) / 3, 2)
+# Introduce the MREs
+for i in range(0, len(data_files_list)):
+    fingerprints_df[f'MRE_{data_files_list[i][12:-4]}'] = pred_vs_exp_df_list[i]['MRE']
 
-    return average_ccs
-
-
-fingerprints['correct_ccs_avg'] = fingerprints.apply(calculate_average_ccs, axis=1)
+print(fingerprints_df.shape)
+print(fingerprints_df.head(10))
 
 """
 import os
