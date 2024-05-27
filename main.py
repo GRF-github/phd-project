@@ -70,4 +70,4 @@ if __name__ == "__main__":
         )
 
         save_preprocessor_and_blender(preprocessor, blender, fold)
-        evaluate_model(blender, preprocessor, test_split_X, test_split_y, fold)
+        evaluate_model(blender, preprocessor, test_split_X, test_split_y, test_index, fold)
