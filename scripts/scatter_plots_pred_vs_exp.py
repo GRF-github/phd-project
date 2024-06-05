@@ -49,9 +49,6 @@ fingerprints_df = fingerprints_df[['Adduct', 'InChIKEY']]
 # Keep only the first 14 characters of 'InChIKEY'
 fingerprints_df['InChIKEY'] = fingerprints_df['InChIKEY'].str.slice(0, 14)
 
-# TODO: Temporary smoke test
-fingerprints_df = fingerprints_df[:1500]
-
 # Introduce the MREs
 for i in range(0, len(data_files_list)):
     fingerprints_df[f'MRE_{data_files_list[i][12:-4]}'] = pred_vs_exp_df_list[i]['MRE']
